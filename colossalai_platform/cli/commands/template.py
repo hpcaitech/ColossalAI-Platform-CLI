@@ -3,11 +3,12 @@ import shutil
 
 import click
 
-from colossalai_platform.cli.aliased_group import (CONTEXT_SETTINGS,
-                                                   AliasedGroup)
+from colossalai_platform.cli.aliased_group import (CONTEXT_SETTINGS, AliasedGroup)
 
 
-@click.command(cls=AliasedGroup, context_settings=CONTEXT_SETTINGS, help="Manage your templates for training and inference")
+@click.command(cls=AliasedGroup,
+               context_settings=CONTEXT_SETTINGS,
+               help="Manage your templates for training and inference")
 def template():
     pass
 
@@ -37,10 +38,23 @@ def init(name):
         # skip this file
         if file_name in ['__init__.py', '__pycache__']:
             continue
-        
+
         src_path = os.path.join(template_file_dir, file_name)
         dst_path = os.path.join(user_template_dir, file_name)
-        shutil.copy(src_path, dst_path)
+
+        if file_name == "README.md":
+            # replace template name in README.md
+            with open(src_path, 'r') as src_f:
+                lines = src_f.readlines()
+
+            # replace <Template-Name> with the actual name
+            lines = [line.replace('<Template-Name>', name) for line in lines]
+
+            # write to the new file
+            with open(dst_path, 'w') as dst_f:
+                dst_f.writelines(lines)
+        else:
+            shutil.copy(src_path, dst_path)
 
 
 # register command
