@@ -1,0 +1,9 @@
+{
+  "HyperParameters": [
+    {
+      "name": "epoch",
+      "types": "string",
+      "defaultValue": "10"
+    }
+  ]
+}

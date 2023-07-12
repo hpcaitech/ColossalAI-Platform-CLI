@@ -12,6 +12,7 @@ OUTPUT_DIR = os.environ['OUTPUT_DIR']
 CHECKPOINT_DIR = os.path.join(OUTPUT_DIR, 'checkpoint')
 TENSORBOARD_DIR = os.path.join(OUTPUT_DIR, 'tensorboard')
 
+
 def create_if_not_exist(path):
     # create if not exists
     if not os.path.exists(path):
@@ -20,7 +21,6 @@ def create_if_not_exist(path):
 
 create_if_not_exist(CHECKPOINT_DIR)
 create_if_not_exist(TENSORBOARD_DIR)
-
 
 # ==================================
 # ColossalAI Platform Specification
