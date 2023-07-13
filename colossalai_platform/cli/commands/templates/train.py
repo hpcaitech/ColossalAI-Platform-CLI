@@ -1,6 +1,5 @@
 import os
-
-from tensorboard.compat.tensorflow_stub.io.gfile import LocalFileSystem
+from patch import patch_tensorboard
 
 # ==================================
 # ColossalAI Platform Specification
@@ -8,8 +7,8 @@ from tensorboard.compat.tensorflow_stub.io.gfile import LocalFileSystem
 # Start
 # ==================================
 
-# hack to make tensorboard compatible with Cloud File System
-delattr(LocalFileSystem, "append")
+# patch dependencies
+patch_tensorboard()
 
 # Environment variables for your data access
 PROJECT_DIR = os.environ['PROJECT_DIR']
