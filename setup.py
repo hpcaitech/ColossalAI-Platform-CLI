@@ -33,7 +33,7 @@ def get_template_files():
 
 
 setup(
-    name='colossalai_platform',
+    name='colossalai-platform',
     version=get_version(),
     packages=find_packages(exclude=(
         'build',
@@ -62,7 +62,7 @@ setup(
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: Apache Software License',
-        'Topic :: Cloud :: Command Line Tool',
-        'Topic :: System :: Distributed Computing',
+        'Topic :: Software Development :: Build Tools',
+        "Topic :: System :: Distributed Computing"
     ],
 )

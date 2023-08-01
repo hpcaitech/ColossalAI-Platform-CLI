@@ -27,7 +27,7 @@ The CLI is built on top of [Click](https://click.palletsprojects.com/en/8.0.x/),
 pip install git+https://github.com/hpcaitech/ColossalAI-Platform-CLI@main
 ```
 
-2. From PyPI (**Not Available Yet**)
+2. From PyPI
 ```bash
 pip install colossalai-platform
 ```
