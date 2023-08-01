@@ -18,18 +18,18 @@ def get_version():
         return f.read().strip()
 
 
-def get_template_files():
+def get_project_files():
     # get current file dir directory
     # the templates files are located in current_file_path/templates
     current_file_path = os.path.dirname(os.path.abspath(__file__))
-    template_file_dir = os.path.join(current_file_path, 'colossalai_platform/cli/commands/templates')
+    project_file_dir = os.path.join(current_file_path, 'colossalai_platform/cli/commands/projects')
     
-    # get all the files in template_file_dir
-    template_files = []
+    # get all the files in project_file_dir
+    project_files = []
     
-    for file_name in os.listdir(template_file_dir):
-        template_files.append(os.path.join(template_file_dir, file_name))
-    return template_files
+    for file_name in os.listdir(project_file_dir):
+        project_files.append(os.path.join(project_file_dir, file_name))
+    return project_files
 
 
 setup(
@@ -51,7 +51,7 @@ setup(
     project_urls={
         'Github': 'https://github.com/hpcaitech/ColossalAI-Platform-CLI',
     },
-    package_data={'': get_template_files()},
+    package_data={'': get_project_files()},
     include_package_data=True,
     install_requires=fetch_requirements('requirements.txt'),
     python_requires='>=3.6',
