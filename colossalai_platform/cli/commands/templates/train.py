@@ -15,6 +15,7 @@ patch_tensorboard()
 PROJECT_DIR = os.environ['PROJECT_DIR']
 DATASET_DIR = os.environ['DATASET_DIR']
 OUTPUT_DIR = os.environ['OUTPUT_DIR']
+INPUT_MODEL_DIR = os.environ['MODEL_DIR']
 CHECKPOINT_DIR = os.path.join(OUTPUT_DIR, 'checkpoint')
 TENSORBOARD_DIR = os.path.join(OUTPUT_DIR, 'tensorboard')
 
