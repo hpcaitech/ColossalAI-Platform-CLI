@@ -13,6 +13,7 @@ patch_platform_specific_dependencies()
 # Modify it to fit your needs.
 # ===================================================================
 
+
 def parse_args(parser: argparse.ArgumentParser):
     # required arguments
     parser.add_argument(
@@ -49,6 +50,7 @@ def parse_args(parser: argparse.ArgumentParser):
     )
     return parser.parse_args()
 
+
 def main():
     parser = argparse.ArgumentParser(description="training script")
     args = parse_args(parser)
@@ -58,7 +60,7 @@ def main():
     # $OUTPUT_DIR/tensorboard:
     #     The platform-builtin tensorboard expects events to be here.
     # $OUTPUT_DIR/checkpoint
-    #     The platform-builtin checkpoint recovery feature 
+    #     The platform-builtin checkpoint recovery feature
     #     expects the checkpoint to be here.
     tensorboard_dir = os.path.join(args.output_dir, "tensorboard")
     os.mkdir(tensorboard_dir, exist_ok=True)
@@ -66,6 +68,7 @@ def main():
     os.mkdir(checkpoint_dir, exist_ok=True)
 
     # TODO: your training code here
+
 
 if __name__ == "__main__":
     main()

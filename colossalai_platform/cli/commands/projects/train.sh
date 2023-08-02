@@ -7,7 +7,7 @@ SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 #     This script would be executed by our distributed jobs.
 # ===================================================================
 # The following builtin environment variables are provided:
-# 
+#
 # PROJECT_DIR, DATASET_DIR, MODEL_DIR, OUTPUT_DIR
 #
 # Pass them to your torchrun script as you like.
@@ -16,8 +16,8 @@ SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # All hyperparameters would be injected as environment vaiables.
 #
 # They are defined in HyperParameters.json, check it for more details.
-# 
-# The hyperparameters would be simply passed by name, 
+#
+# The hyperparameters would be simply passed by name,
 # in this starter script, it's ${epoch}.
 #
 # ===================================================================
@@ -26,7 +26,7 @@ SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # $OUTPUT_DIR/tensorboard:
 #     The platform-builtin tensorboard expects events to be here.
 # $OUTPUT_DIR/checkpoint
-#     The platform-builtin checkpoint recovery feature 
+#     The platform-builtin checkpoint recovery feature
 #     expects the checkpoint to be here.
 #
 # ===================================================================

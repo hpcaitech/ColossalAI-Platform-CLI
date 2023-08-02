@@ -6,6 +6,7 @@ def _patch_tensorboard():
         delattr(LocalFileSystem, "append")
     except ImportError:
         print("Tensorboard patch failed. Please check your tensorboard version.")
-    
+
+
 def patch_platform_specific_dependencies():
     _patch_tensorboard()
