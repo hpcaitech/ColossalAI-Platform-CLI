@@ -16,13 +16,13 @@ This section will guide you to write your own project.
 
 1. Install ColossalAI Platform CLI `cap` based on the instruction in the [GitHub Page](https://github.com/hpcaitech/ColossalAI-Platform-CLI).
 
-2. Initialize your projects
+2. Initialize your project
 
 ```bash
-cap projects init <name>
+cap project init <name>
 ```
 
-3. Migrate your code to the project. We have provided the `train.py` as the common entrypoint. `train.py` contains some pre-defined code which is necessary for the projects to work. You should not modify them. If you wnat to use other files as the entrypoint, you should change `train.py` in `train.sh` to your own file name while maintaining the pre-defined code in your own file.
+3. Migrate your code to the project. We have provided the `train.py` as the common entrypoint. `train.py` contains some pre-defined code which is necessary for the project to work. You should not modify them. If you wnat to use other files as the entrypoint, you should change `train.py` in `train.sh` to your own file name while maintaining the pre-defined code in your own file.
 
 4. Update the `HyperParameters.json` for your training arguments. This json file defines the arguments which can be configured by the user on the ColossalAI Platform Web UI. An example is given below.
 
