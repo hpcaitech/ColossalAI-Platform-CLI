@@ -3,7 +3,7 @@ import click
 from colossalai_platform.cli.aliased_group import (CONTEXT_SETTINGS,
                                                    AliasedGroup)
 
-from .commands import template
+from .commands import project
 
 __all__ = ['cli']
 
@@ -14,4 +14,4 @@ def cli():
 
 
 # add command group
-cli.add_command(template)
+cli.add_command(project)

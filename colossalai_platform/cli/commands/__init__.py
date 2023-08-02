@@ -1,1 +1,1 @@
-from .template import template
+from .project import project
