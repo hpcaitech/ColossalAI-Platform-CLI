@@ -15,9 +15,7 @@ This repository contains the Command Line Tools for the ColossalAI Platform.
 The CLI is called `cap` which stands for `C(olossal)A(I) P(latform)`.
 This CLI aims to provide an interface for users to access the various functions provided on the cloud platform and boost their productivity.
 
-
 The CLI is built on top of [Click](https://click.palletsprojects.com/en/8.0.x/), a Python package for creating beautiful command line interfaces in a composable way with as little code as necessary.
-
 
 ## 🔨 Installation
 
@@ -28,6 +26,7 @@ pip install git+https://github.com/hpcaitech/ColossalAI-Platform-CLI@main
 ```
 
 2. From PyPI
+
 ```bash
 pip install colossalai-platform
 ```
@@ -37,8 +36,8 @@ pip install colossalai-platform
 A documentation website will be built when this CLI is mature.
 Before that, you can refer to the following sections to use the CLI.
 
-### Create a Template
+### Create a Project
 
 ```bash
-cap template init <template-name>
+cap project init <project-name>
 ```
