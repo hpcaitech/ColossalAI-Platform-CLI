@@ -3,32 +3,19 @@ SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # ===================================================================
 #                Welcome to ColossalAI Platform!
-#
-#     This script would be executed by our distributed jobs.
 # ===================================================================
-# The following builtin environment variables are provided:
+# Those environment variables would be injected by the runner:
 #
-# PROJECT_DIR, DATASET_DIR, MODEL_DIR, OUTPUT_DIR
+# 1. ColossalAI Platform defined ones:
+#    PROJECT_DIR, DATASET_DIR, MODEL_DIR, OUTPUT_DIR, SCRIPT_DIR
 #
-# Pass them to your torchrun script as you like.
+# 2. Required by torchrun:
+#    NNODES, NPROC_PER_NODE, NODE_RANK, MASTER_ADDR, MASTER_PORT
 #
-# ===================================================================
-# All hyperparameters would be injected as environment vaiables.
+# 3. Hyperparameters from configuration UI:
+#    (check HyperParameters.json for more details)
 #
-# They are defined in HyperParameters.json, check it for more details.
-#
-# The hyperparameters would be simply passed by name,
-# in this starter script, it's ${epoch}.
-#
-# ===================================================================
-# Also, there are some path conventions:
-#
-# $OUTPUT_DIR/tensorboard:
-#     The platform-builtin tensorboard expects events to be here.
-# $OUTPUT_DIR/checkpoint
-#     The platform-builtin checkpoint recovery feature
-#     expects the checkpoint to be here.
-#
+# After that, the runner would execute `train.sh`, this script.
 # ===================================================================
 
 torchrun --nnodes ${NNODES} \
@@ -37,7 +24,6 @@ torchrun --nnodes ${NNODES} \
     --master_addr ${MASTER_ADDR} \
     --master_port ${MASTER_PORT} \
     ${SCRIPT_DIR}/train.py \
-    --epoch ${epoch} \
     --project_dir ${PROJECT_DIR} \
     --dataset_dir ${DATASET_DIR} \
     --model_dir ${MODEL_DIR} \

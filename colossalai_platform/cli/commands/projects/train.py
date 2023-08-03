@@ -14,14 +14,8 @@ patch_platform_specific_dependencies()
 # ===================================================================
 
 
-def parse_args(parser: argparse.ArgumentParser):
+def add_platform_args(parser: argparse.ArgumentParser):
     # required arguments
-    parser.add_argument(
-        "--epoch",
-        type=int,
-        required=True,
-        help="The training epoch.",
-    )
     parser.add_argument(
         "--project_dir",
         type=str,
@@ -48,12 +42,12 @@ def parse_args(parser: argparse.ArgumentParser):
         default=None,
         help="The directory contains the model to finetune.",
     )
-    return parser.parse_args()
 
 
 def main():
     parser = argparse.ArgumentParser(description="training script")
-    args = parse_args(parser)
+    add_platform_args(parser)
+    args = parser.parse_args()
 
     # There are some path conventions:
     #
