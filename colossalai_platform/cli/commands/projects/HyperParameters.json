@@ -4,7 +4,8 @@
     // {
     //   "name": "epoch",
     //   "types": "string",
-    //   "defaultValue": "10"
+    //   "defaultValue": "10",
+    //   "description": "Number of epochs for training"
     // }
     //
     // At our platform, it would be injected into `train.sh`
