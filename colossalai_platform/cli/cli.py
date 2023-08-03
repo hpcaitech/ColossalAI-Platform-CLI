@@ -1,7 +1,6 @@
 import click
 
-from colossalai_platform.cli.aliased_group import (CONTEXT_SETTINGS,
-                                                   AliasedGroup)
+from colossalai_platform.cli.aliased_group import (CONTEXT_SETTINGS, AliasedGroup)
 
 from .commands import project
 

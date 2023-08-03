@@ -23,10 +23,10 @@ def get_project_files():
     # the templates files are located in current_file_path/templates
     current_file_path = os.path.dirname(os.path.abspath(__file__))
     project_file_dir = os.path.join(current_file_path, 'colossalai_platform/cli/commands/projects')
-    
+
     # get all the files in project_file_dir
     project_files = []
-    
+
     for file_name in os.listdir(project_file_dir):
         project_files.append(os.path.join(project_file_dir, file_name))
     return project_files
@@ -60,9 +60,7 @@ setup(
         cap=colossalai_platform.cli:cli
     ''',
     classifiers=[
-        'Programming Language :: Python :: 3',
-        'License :: OSI Approved :: Apache Software License',
-        'Topic :: Software Development :: Build Tools',
-        "Topic :: System :: Distributed Computing"
+        'Programming Language :: Python :: 3', 'License :: OSI Approved :: Apache Software License',
+        'Topic :: Software Development :: Build Tools', "Topic :: System :: Distributed Computing"
     ],
 )

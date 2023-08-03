@@ -1,9 +1,14 @@
 {
   "HyperParameters": [
-    {
-      "name": "epoch",
-      "types": "string",
-      "defaultValue": "10"
-    }
+    // TODO: Add your parameters like this:
+    // {
+    //   "name": "epoch",
+    //   "types": "string",
+    //   "defaultValue": "10",
+    //   "description": "Number of epochs for training"
+    // }
+    //
+    // At our platform, it would be injected into `train.sh`
+    // as environment variable ${epoch}
   ]
 }
