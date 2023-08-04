@@ -24,7 +24,7 @@ def login(ctx: click.Context, dont_save_credential: bool):
 
     print(f"""## Login to the platform.
 
-By default the username and password will be saved to {str(base_ctx.config_path())},
+By default the username and password will be saved to {str(base_ctx.config_path())}
 use --dont-save-credential if you don't want this behavior.
 """)
     username = click.prompt("Username")

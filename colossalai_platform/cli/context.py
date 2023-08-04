@@ -8,7 +8,7 @@ from colossalai_platform.cli.config import Config
 
 
 class BaseCommandContext(BaseModel):
-    dir: Path = Path.home() / ".cloud-platform"
+    dir: Path = Path.home() / ".colossalai-platform"
     config: Config = Config()
     token: str = ""
 
