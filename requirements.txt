@@ -1,1 +1,4 @@
 click
+requests
+pydantic
+pyyaml
