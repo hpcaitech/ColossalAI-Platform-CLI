@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from dataclasses import dataclass
 from pathlib import Path
 
 import yaml
@@ -12,10 +13,18 @@ from colossalai_platform.cli.config import Config
 LOGGER = logging.getLogger(__name__)
 
 
-class BaseCommandContext(BaseModel):
+@dataclass
+class BaseCommandContext:
+    """This `base` method is the only way to provide
+    dataclass-like initialization, while we can inject
+     code at `__init__` method
+     """
     dir: Path = Path.home() / ".colossalai-platform"
     config: Config = Config()
     api: ColossalPlatformApi = None
+
+
+class CommandContext(BaseCommandContext):
 
     def __init__(self, **kwargs):
         # set up default value
