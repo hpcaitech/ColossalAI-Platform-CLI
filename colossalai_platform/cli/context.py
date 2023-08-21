@@ -4,6 +4,7 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
+import click
 import yaml
 from pydantic import BaseModel
 
@@ -33,11 +34,10 @@ class CommandContext(BaseCommandContext):
         if self.config_path().is_file():
             self._load_config()
         else:
-            # TODO(ofey404): more formal logging
-            print(f"## Config doesn't exist on {self.config_path()}, writing default to it")
+            click.echo(f"Config doesn't exist on {self.config_path()}, writing default to it")
             self.dump_to_dir()
 
-        LOGGER.debug(f"## Config: {self.config}")
+        LOGGER.debug(f"Config: {self.config}")
 
         if self.api is None:
             self.api = ColossalPlatformApi(config=self.config)
