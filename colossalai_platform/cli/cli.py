@@ -3,8 +3,8 @@ import logging
 import click
 
 from colossalai_platform.cli.aliased_group import (CONTEXT_SETTINGS, AliasedGroup)
-from colossalai_platform.cli.context import BaseCommandContext
-from .api.api import LoginError
+from colossalai_platform.cli.context import CommandContext
+from .api import ApiError
 
 from .commands import project, dataset, configure
 
@@ -34,13 +34,13 @@ def cli(
     debug: bool,
 ):
     configure_logging(debug)
-    ctx.obj = BaseCommandContext()
+    ctx.obj = CommandContext()
 
     if ctx.invoked_subcommand in REQUIRE_LOGIN:
         # TODO(ofey404): persist token to file, rather than login every time
         try:
             ctx.obj.api.login()
-        except LoginError as e:
+        except ApiError as e:
             click.echo(e)
             ctx.exit(1)
 

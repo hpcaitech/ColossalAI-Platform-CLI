@@ -1,8 +1,10 @@
 import json
 import logging
 import os
+from dataclasses import dataclass
 from pathlib import Path
 
+import click
 import yaml
 from pydantic import BaseModel
 
@@ -12,10 +14,18 @@ from colossalai_platform.cli.config import Config
 LOGGER = logging.getLogger(__name__)
 
 
-class BaseCommandContext(BaseModel):
+@dataclass
+class BaseCommandContext:
+    """This `base` class is the only way to persist
+    dataclass-like **kwargs initialization, while we can inject
+    code at CommandContext's `__init__` method
+    """
     dir: Path = Path.home() / ".colossalai-platform"
     config: Config = Config()
     api: ColossalPlatformApi = None
+
+
+class CommandContext(BaseCommandContext):
 
     def __init__(self, **kwargs):
         # set up default value
@@ -24,11 +34,10 @@ class BaseCommandContext(BaseModel):
         if self.config_path().is_file():
             self._load_config()
         else:
-            # TODO(ofey404): more formal logging
-            print(f"## Config doesn't exist on {self.config_path()}, writing default to it")
+            click.echo(f"Config doesn't exist on {self.config_path()}, writing default to it")
             self.dump_to_dir()
 
-        LOGGER.debug(f"## Config: {self.config}")
+        LOGGER.debug(f"Config: {self.config}")
 
         if self.api is None:
             self.api = ColossalPlatformApi(config=self.config)
