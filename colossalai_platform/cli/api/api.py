@@ -65,7 +65,7 @@ class ColossalPlatformApi:
         storage_path: str,
         local_file_path: Path | str,
     ):
-        # TODO(ofey404): split upload for large file
+        # TODO(ofey404): multi part upload for large file
         LOGGER.debug(f"Uploading {local_file_path} to {storage_type.value}://{storage_id}/{storage_path}")
         url = self._get_presigned_upload_urls(
             storage_type=storage_type,
@@ -88,6 +88,7 @@ class ColossalPlatformApi:
             data,
         )
         response.close()
+
         if response.status_code != 200:
             raise ApiError(f"Upload failed with status code {response.status_code}, body: {response.text}")
 

@@ -23,18 +23,19 @@ def upload_dir(
     assert cmd_ctx
 
     click.echo(f"Uploading directory {directory} as dataset {dataset_id}...")
+
     for local_file_path in _get_all_local_file_path(directory):
         storage_path = _relative_posix_path(directory, local_file_path)
+
         click.echo(f"{local_file_path} => {storage_path}")
 
-        LOGGER.debug(
-            f"local_file_path: {local_file_path}, storage_path: {storage_path}, local_file_path: {local_file_path}")
         cmd_ctx.api.upload(
             storage_type=StorageType.DATASET,
             storage_id=dataset_id,
             storage_path=storage_path,
             local_file_path=local_file_path,
         )
+
     click.echo("Done")
 
 

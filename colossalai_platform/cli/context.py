@@ -15,10 +15,10 @@ LOGGER = logging.getLogger(__name__)
 
 @dataclass
 class BaseCommandContext:
-    """This `base` method is the only way to provide
-    dataclass-like initialization, while we can inject
-     code at `__init__` method
-     """
+    """This `base` class is the only way to persist
+    dataclass-like **kwargs initialization, while we can inject
+    code at CommandContext's `__init__` method
+    """
     dir: Path = Path.home() / ".colossalai-platform"
     config: Config = Config()
     api: ColossalPlatformApi = None
