@@ -4,7 +4,7 @@ import click
 import pathlib
 from typing import Iterable
 
-from colossalai_platform.cli.api import StorageType
+from colossalai_platform.cli.api import StorageType, UploadRequest
 from colossalai_platform.cli.context import CommandContext
 
 LOGGER = logging.getLogger(__name__)
@@ -30,9 +30,11 @@ def upload_dir(
         click.echo(f"{local_file_path} => {storage_path}")
 
         cmd_ctx.api.upload(
-            storage_type=StorageType.DATASET,
-            storage_id=dataset_id,
-            storage_path=storage_path,
+            req=UploadRequest(
+                storage_type=StorageType.DATASET,
+                storage_id=dataset_id,
+                storage_path=storage_path,
+            ),
             local_file_path=local_file_path,
         )
 

@@ -1,8 +1,11 @@
 import json
+import os
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, IO
+from typing import List, Tuple, IO
+from urllib.parse import urlparse, parse_qs
+
 import requests
 import enum
 
@@ -27,14 +30,19 @@ class StorageType(enum.Enum):
 
 
 @dataclass
+class UploadRequest:
+    storage_type: StorageType
+    storage_id: str
+    storage_path: str
+
+
+@dataclass
 class ColossalPlatformApi:
     config: Config
     token: str = ""
     session: requests.Session = requests.Session()
 
     def login(self):
-        # TODO: a better URL construction method,
-        #       with pydantic.HttpUrl
         url = str(self.config.api_server) + "/api/user/login"
 
         if self.config.username == "" or self.config.password == "":
@@ -46,8 +54,7 @@ class ColossalPlatformApi:
             "password": self.config.password,
         })
 
-        response = self.session.request(
-            "POST",
+        response = self.session.post(
             url,
             headers=headers,
             data=payload,
@@ -60,29 +67,86 @@ class ColossalPlatformApi:
 
     def upload(
         self,
-        storage_type: StorageType,
-        storage_id: str,
-        storage_path: str,
+        req: UploadRequest,
         local_file_path: Path | str,
     ):
-        # TODO(ofey404): multi part upload for large file
-        LOGGER.debug(f"Uploading {local_file_path} to {storage_type.value}://{storage_id}/{storage_path}")
-        url = self._get_presigned_upload_urls(
-            storage_type=storage_type,
-            storage_id=storage_id,
-            file_path=storage_path,
+        total_parts = 1 + local_file_path.stat().st_size // self.config.max_upload_chunk_bytes
+        LOGGER.debug(f"Uploading {local_file_path} to {req.storage_type.value}://{req.storage_id}/{req.storage_path}")
+
+        if total_parts > 1:
+            urls, upload_id = self._get_multipart_presigned_urls(
+                req=req,
+                total_parts=total_parts,
+            )
+            LOGGER.debug(f"urls = {urls}, upload_id = {upload_id}")
+
+            etags = []
+            with open(local_file_path, 'rb') as f:
+                for i, url in enumerate(urls):
+                    offset = i * self.config.max_upload_chunk_bytes
+                    f.seek(offset, os.SEEK_SET)
+                    etag = self._raw_upload(url, f.read(self.config.max_upload_chunk_bytes))
+                    etags.append(etag)
+
+            self._complete_multipart_upload(
+                req=req,
+                upload_id=upload_id,
+                etags=etags,
+            )
+        else:
+            url = self._get_presigned_url(req)
+            with open(local_file_path) as f:
+                content = f.read()
+                self._raw_upload(url, content)
+
+    def _get_presigned_url(
+        self,
+        req: UploadRequest,
+    ) -> str:
+        urls, _ = self._get_multipart_presigned_urls(
+            req,
             total_parts=1,
-        )[0]
+        )
+        return urls[0]
 
-        with open(local_file_path) as f:
-            content = f.read()
-            self._upload(url, content)
+    def _get_multipart_presigned_urls(
+        self,
+        req: UploadRequest,
+        total_parts,
+    ) -> Tuple[List[str], str]:
+        """Get presigned upload urls for a file.
 
-    def _upload(
+        Weird API behavior:
+        if total_parts == 1:
+          there is no `uploadId` in the response.
+        """
+        url = str(self.config.api_server) + "/api/presignUpload"
+
+        payload = json.dumps({
+            "type": req.storage_type.value,
+            "id": req.storage_id,
+            "filePath": req.storage_path,
+            "totalParts": total_parts,
+        })
+
+        response = self.session.post(
+            url,
+            headers=self._headers(login=True),
+            data=payload,
+        )
+
+        if response.status_code == 200:
+            urls = response.json()["presignedUrls"]
+            return urls, _get_upload_id(urls[0])
+        else:
+            raise ApiError(f"presignUpload failed with status code {response.status_code}, body: {response.text}")
+
+    def _raw_upload(
         self,
         presigned_url: str,
-        data: str,
-    ):
+        data: bytes,
+    ) -> str:
+        """Upload data to presigned_url and return the etag"""
         response = self.session.put(
             presigned_url,
             data,
@@ -92,37 +156,57 @@ class ColossalPlatformApi:
         if response.status_code != 200:
             raise ApiError(f"Upload failed with status code {response.status_code}, body: {response.text}")
 
-    def _get_presigned_upload_urls(
+        return response.headers["ETag"]
+
+    def _headers(
         self,
-        storage_type: StorageType,
-        storage_id: str,
-        file_path: str,
-        total_parts,
-    ) -> List[str]:
-        url = str(self.config.api_server) + "/api/presignUpload"
-
-        if self.token == "":
-            raise LoginRequiredError()
-
+        login=False,
+    ):
         headers = {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + self.token,
         }
+        if login:
+            if self.token == "":
+                raise LoginRequiredError()
+            headers["Authorization"] = "Bearer " + self.token
+        return headers
+
+    def _complete_multipart_upload(
+        self,
+        req: UploadRequest,
+        upload_id: str,
+        etags: List[str],
+    ):
+        url = str(self.config.api_server) + "/api/completeMultipartUpload"
+
         payload = json.dumps({
-            "type": storage_type.value,
-            "id": storage_id,
-            "filePath": file_path,
-            "totalParts": total_parts,
+            "parts": [{
+                "partNumber": i + 1,
+                "eTag": etag,
+            } for i, etag in enumerate(etags)],
+            "uploadId": upload_id,
+            "type": req.storage_type.value,
+            "id": req.storage_id,
+            "filePath": req.storage_path,
         })
 
-        response = self.session.request(
-            "POST",
+        response = self.session.post(
             url,
-            headers=headers,
+            headers=self._headers(login=True),
             data=payload,
         )
 
-        if response.status_code == 200:
-            return response.json()["presignedUrls"]
-        else:
-            raise ApiError(f"presignUpload failed with status code {response.status_code}, body: {response.text}")
+        if response.status_code != 200 or (not response.json()["success"]):
+            raise ApiError(f"completeMultipartUpload failed with body: {response.text}")
+
+
+def _get_upload_id(presigned_url: str) -> str:
+    """URL example:
+    https://xxx.volces.com/1/dataset/11/a.txt?uploadId=342e7846666568512a
+    """
+    LOGGER.debug(f"presigned_url = {presigned_url}")
+    p = urlparse(presigned_url)
+    try:
+        return parse_qs(p.query)["uploadId"][0]
+    except KeyError:
+        return ""
