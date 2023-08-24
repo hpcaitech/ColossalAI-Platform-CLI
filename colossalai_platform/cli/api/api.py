@@ -1,7 +1,7 @@
 import json
 import os
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Tuple, IO
 from urllib.parse import urlparse, parse_qs
@@ -24,6 +24,18 @@ class LoginRequiredError(Exception):
         super().__init__(message)
 
 
+class DatasetNotFoundError(Exception):
+
+    def __init__(self, dataset_id: str):
+        super().__init__(f"Dataset {dataset_id} not found")
+
+
+class NoObjectToDeleteError(Exception):
+
+    def __init__(self, dataset_id: str):
+        super().__init__(f"No object to delete in dataset {dataset_id}")
+
+
 class StorageType(enum.Enum):
     DATASET = "dataset"
     PROJECT = "project"
@@ -34,6 +46,22 @@ class UploadRequest:
     storage_type: StorageType
     storage_id: str
     storage_path: str
+
+
+@dataclass
+class DatasetInfoResponse:
+    datasetId: str
+    datasetName: str
+    datasetFullName: str
+    datasetDescription: str
+    createdAt: str
+
+
+@dataclass
+class DatasetDeleteFilesRequest:
+    datasetId: str
+    filePaths: List[str] = field(default_factory=list)
+    folders: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -48,22 +76,57 @@ class ColossalPlatformApi:
         if self.config.username == "" or self.config.password == "":
             raise ApiError("Username or password is empty, please call `cap configure` first")
 
-        headers = {'Content-Type': 'application/json'}
-        payload = json.dumps({
-            "username": self.config.username,
-            "password": self.config.password,
-        })
-
         response = self.session.post(
             url,
-            headers=headers,
-            data=payload,
+            headers={'Content-Type': 'application/json'},
+            data=json.dumps({
+                "username": self.config.username,
+                "password": self.config.password,
+            }),
         )
 
         if response.status_code == 200:
             self.token = response.json()['accessToken']
         else:
-            raise ApiError(f"Login failed with status code {response.status_code}, body: {response.text}")
+            raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
+
+    def dataset_info(self, dataset_id: str) -> DatasetInfoResponse:
+        url = str(self.config.api_server) + "/api/dataset/info"
+
+        response = self.session.post(
+            url,
+            headers=self._headers(login=True),
+            data=json.dumps({
+                "datasetId": dataset_id,
+            }),
+        )
+
+        if response.status_code == 200:
+            return DatasetInfoResponse(**response.json())
+        elif response.status_code == 404:
+            if response.json()["message"] == "dataset not found":
+                raise DatasetNotFoundError(dataset_id)
+        else:
+            raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
+
+    def dataset_delete_files(self, req: DatasetDeleteFilesRequest):
+        # TODO
+        url = str(self.config.api_server) + "/api/dataset/file/delete"
+
+        response = self.session.post(
+            url,
+            headers=self._headers(login=True),
+            data=json.dumps({
+                "filePaths": req.filePaths,
+                "datasetId": req.datasetId,
+                "folders": req.folders,
+            }),
+        )
+
+        if response.status_code != 200 or (not response.json()["success"]):
+            if response.status_code == 500 and ("You must specify at least one object" in response.json()["message"]):
+                raise NoObjectToDeleteError(req.datasetId)
+            raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
 
     def upload(
         self,
@@ -73,6 +136,7 @@ class ColossalPlatformApi:
         total_parts = 1 + local_file_path.stat().st_size // self.config.max_upload_chunk_bytes
         LOGGER.debug(f"Uploading {local_file_path} to {req.storage_type.value}://{req.storage_id}/{req.storage_path}")
 
+        # TODO(ofey404): refactor this
         if total_parts > 1:
             urls, upload_id = self._get_multipart_presigned_urls(
                 req=req,
@@ -82,6 +146,7 @@ class ColossalPlatformApi:
 
             etags = []
             with open(local_file_path, 'rb') as f:
+                # TODO(ofey404): retry on failure
                 for i, url in enumerate(urls):
                     offset = i * self.config.max_upload_chunk_bytes
                     f.seek(offset, os.SEEK_SET)
@@ -95,6 +160,7 @@ class ColossalPlatformApi:
             )
         else:
             url = self._get_presigned_url(req)
+
             with open(local_file_path) as f:
                 content = f.read()
                 self._raw_upload(url, content)
@@ -122,24 +188,22 @@ class ColossalPlatformApi:
         """
         url = str(self.config.api_server) + "/api/presignUpload"
 
-        payload = json.dumps({
-            "type": req.storage_type.value,
-            "id": req.storage_id,
-            "filePath": req.storage_path,
-            "totalParts": total_parts,
-        })
-
         response = self.session.post(
             url,
             headers=self._headers(login=True),
-            data=payload,
+            data=json.dumps({
+                "type": req.storage_type.value,
+                "id": req.storage_id,
+                "filePath": req.storage_path,
+                "totalParts": total_parts,
+            }),
         )
 
         if response.status_code == 200:
             urls = response.json()["presignedUrls"]
             return urls, _get_upload_id(urls[0])
         else:
-            raise ApiError(f"presignUpload failed with status code {response.status_code}, body: {response.text}")
+            raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
 
     def _raw_upload(
         self,
@@ -154,7 +218,9 @@ class ColossalPlatformApi:
         response.close()
 
         if response.status_code != 200:
-            raise ApiError(f"Upload failed with status code {response.status_code}, body: {response.text}")
+            raise ApiError(
+                f"Upload to presigned url {presigned_url} failed with status code {response.status_code}, body: {response.text}"
+            )
 
         return response.headers["ETag"]
 
@@ -179,25 +245,23 @@ class ColossalPlatformApi:
     ):
         url = str(self.config.api_server) + "/api/completeMultipartUpload"
 
-        payload = json.dumps({
-            "parts": [{
-                "partNumber": i + 1,
-                "eTag": etag,
-            } for i, etag in enumerate(etags)],
-            "uploadId": upload_id,
-            "type": req.storage_type.value,
-            "id": req.storage_id,
-            "filePath": req.storage_path,
-        })
-
         response = self.session.post(
             url,
             headers=self._headers(login=True),
-            data=payload,
+            data=json.dumps({
+                "parts": [{
+                    "partNumber": i + 1,
+                    "eTag": etag,
+                } for i, etag in enumerate(etags)],
+                "uploadId": upload_id,
+                "type": req.storage_type.value,
+                "id": req.storage_id,
+                "filePath": req.storage_path,
+            }),
         )
 
         if response.status_code != 200 or (not response.json()["success"]):
-            raise ApiError(f"completeMultipartUpload failed with body: {response.text}")
+            raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
 
 
 def _get_upload_id(presigned_url: str) -> str:
