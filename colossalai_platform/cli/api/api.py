@@ -110,7 +110,6 @@ class ColossalPlatformApi:
             raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
 
     def dataset_delete_files(self, req: DatasetDeleteFilesRequest):
-        # TODO
         url = str(self.config.api_server) + "/api/dataset/file/delete"
 
         response = self.session.post(
@@ -136,7 +135,6 @@ class ColossalPlatformApi:
         total_parts = 1 + local_file_path.stat().st_size // self.config.max_upload_chunk_bytes
         LOGGER.debug(f"Uploading {local_file_path} to {req.storage_type.value}://{req.storage_id}/{req.storage_path}")
 
-        # TODO(ofey404): refactor this
         if total_parts > 1:
             urls, upload_id = self._get_multipart_presigned_urls(
                 req=req,
@@ -144,14 +142,7 @@ class ColossalPlatformApi:
             )
             LOGGER.debug(f"urls = {urls}, upload_id = {upload_id}")
 
-            etags = []
-            with open(local_file_path, 'rb') as f:
-                # TODO(ofey404): retry on failure
-                for i, url in enumerate(urls):
-                    offset = i * self.config.max_upload_chunk_bytes
-                    f.seek(offset, os.SEEK_SET)
-                    etag = self._raw_upload(url, f.read(self.config.max_upload_chunk_bytes))
-                    etags.append(etag)
+            etags = self._raw_multipart_upload(urls, local_file_path, chunk_bytes=self.config.max_upload_chunk_bytes)
 
             self._complete_multipart_upload(
                 req=req,
@@ -223,6 +214,22 @@ class ColossalPlatformApi:
             )
 
         return response.headers["ETag"]
+
+    def _raw_multipart_upload(
+        self,
+        presigned_urls: List[str],
+        local_file_path: Path | str,
+        chunk_bytes: int,
+    ) -> List[str]:
+        etags = []
+        with open(local_file_path, 'rb') as f:
+            # TODO(ofey404): retry on failure
+            for i, url in enumerate(presigned_urls):
+                offset = i * chunk_bytes
+                f.seek(offset, os.SEEK_SET)
+                etag = self._raw_upload(url, f.read(chunk_bytes))
+                etags.append(etag)
+        return etags
 
     def _headers(
         self,
