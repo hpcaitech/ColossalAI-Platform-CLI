@@ -1,5 +1,5 @@
 from .api import ColossalPlatformApi, StorageType, ApiError, LoginRequiredError, UploadRequest, DatasetNotFoundError, \
-    DatasetDeleteFilesRequest, NoObjectToDeleteError
+    DatasetDeleteFilesRequest, NoObjectToDeleteError, DatasetListResponse
 
 __all__ = [
     ColossalPlatformApi,
@@ -10,4 +10,5 @@ __all__ = [
     NoObjectToDeleteError,
     UploadRequest,
     DatasetDeleteFilesRequest,
+    DatasetListResponse,
 ]
