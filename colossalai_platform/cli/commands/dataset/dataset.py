@@ -1,6 +1,7 @@
 import click
 
 from colossalai_platform.cli.aliased_group import AliasedGroup, CONTEXT_SETTINGS
+from colossalai_platform.cli.commands.dataset.list import list_dataset
 from colossalai_platform.cli.commands.dataset.upload_dir import upload_dir
 
 
@@ -10,3 +11,4 @@ def dataset():
 
 
 dataset.add_command(upload_dir)
+dataset.add_command(list_dataset)

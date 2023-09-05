@@ -1,4 +1,9 @@
 requests>=2
 click~=8.1.6
 pydantic~=2.1.1
-pyyaml~=5.4.1
+
+# Use PyYaml 5.3.1 until this issue is resolved:
+# https://github.com/yaml/pyyaml/issues/724
+#
+# Otherwise the pip install above python 3.10 would fail.
+pyyaml~=5.3.1

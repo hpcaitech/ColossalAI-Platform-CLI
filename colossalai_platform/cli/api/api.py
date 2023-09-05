@@ -1,6 +1,7 @@
 import json
 import os
 import logging
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Tuple, IO
@@ -58,6 +59,15 @@ class DatasetInfoResponse:
 
 
 @dataclass
+class DatasetListResponse:
+    datasetName: str
+    datasetFullName: str
+    datasetDescription: str
+    createdAt: str
+    datasetId: str
+
+
+@dataclass
 class DatasetDeleteFilesRequest:
     datasetId: str
     filePaths: List[str] = field(default_factory=list)
@@ -71,7 +81,7 @@ class ColossalPlatformApi:
     session: requests.Session = requests.Session()
 
     def login(self):
-        url = str(self.config.api_server) + "/api/user/login"
+        url = self.config.api_server + "/api/user/login"
 
         if self.config.username == "" or self.config.password == "":
             raise ApiError("Username or password is empty, please call `cap configure` first")
@@ -90,8 +100,43 @@ class ColossalPlatformApi:
         else:
             raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
 
+    def dataset_list(
+        self,
+        is_owned=True,
+    ) -> List[DatasetListResponse]:
+        url = self.config.api_server + "/api/dataset/list"
+
+        current_page = 1
+        merged_datasets = []
+        while True:
+            response = self.session.post(
+                url,
+                headers=self._headers(login=True),
+                data=json.dumps({
+                    "isOwned": is_owned,
+                    "pager": {
+                        "pageSize": 10,
+                        "currentPage": current_page,
+                    },
+                }),
+            )
+
+            if response.status_code != 200:
+                raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
+
+            merged_datasets.extend(response.json()["datasets"])
+
+            total_entries = response.json()["pager"]["totalEntries"]
+            page_size = response.json()["pager"]["pageSize"]
+            if page_size * current_page > total_entries:
+                break
+            else:
+                current_page += 1
+
+        return [DatasetListResponse(**d) for d in merged_datasets]
+
     def dataset_info(self, dataset_id: str) -> DatasetInfoResponse:
-        url = str(self.config.api_server) + "/api/dataset/info"
+        url = self.config.api_server + "/api/dataset/info"
 
         response = self.session.post(
             url,
@@ -110,7 +155,7 @@ class ColossalPlatformApi:
             raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
 
     def dataset_delete_files(self, req: DatasetDeleteFilesRequest):
-        url = str(self.config.api_server) + "/api/dataset/file/delete"
+        url = self.config.api_server + "/api/dataset/file/delete"
 
         response = self.session.post(
             url,
@@ -177,7 +222,7 @@ class ColossalPlatformApi:
         if total_parts == 1:
           there is no `uploadId` in the response.
         """
-        url = str(self.config.api_server) + "/api/presignUpload"
+        url = self.config.api_server + "/api/presignUpload"
 
         response = self.session.post(
             url,
@@ -250,7 +295,7 @@ class ColossalPlatformApi:
         upload_id: str,
         etags: List[str],
     ):
-        url = str(self.config.api_server) + "/api/completeMultipartUpload"
+        url = self.config.api_server + "/api/completeMultipartUpload"
 
         response = self.session.post(
             url,
