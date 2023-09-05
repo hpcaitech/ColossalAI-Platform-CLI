@@ -39,7 +39,7 @@ def cli(
     if ctx.invoked_subcommand in REQUIRE_LOGIN:
         # TODO(ofey404): persist token to file, rather than login every time
         try:
-            ctx.obj.api.login()
+            ctx.obj.api.user().login()
         except ApiError as e:
             click.echo(e)
             ctx.exit(1)

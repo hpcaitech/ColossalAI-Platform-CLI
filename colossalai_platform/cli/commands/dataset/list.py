@@ -11,7 +11,7 @@ def list_dataset(ctx: click.Context,):
     cmd_ctx = ctx.find_object(CommandContext)
     assert cmd_ctx
 
-    datasets = cmd_ctx.api.dataset_list()
+    datasets = cmd_ctx.api.dataset().list()
 
     for i, d in enumerate(datasets):
         _pretty_print_dataset(d)
