@@ -6,6 +6,7 @@ from typing import Iterable
 
 from colossalai_platform.cli.api import DatasetNotFoundError, DatasetDeleteFilesRequest, \
     NoObjectToDeleteError
+from colossalai_platform.cli.commands.util import do_you_want_to_continue
 from colossalai_platform.cli.context import CommandContext
 
 LOGGER = logging.getLogger(__name__)
@@ -44,10 +45,7 @@ The dataset content would be overwritten.
 """)
 
     if not yes:
-        y = click.prompt("Do you want to continue [y/N]")
-        if y.lower() != "y":
-            click.echo("Aborted!")
-            return
+        do_you_want_to_continue(ctx)
 
     click.echo(f"Clearing dataset {dataset_id}...")
 

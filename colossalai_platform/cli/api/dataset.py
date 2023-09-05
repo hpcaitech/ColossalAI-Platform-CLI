@@ -142,3 +142,24 @@ class Dataset:
             ),
             local_file_path=local_file_path,
         )
+
+    def create(
+        self,
+        dataset_name: str,
+        dataset_description: str,
+    ) -> str:
+        url = self.ctx.config.api_server + "/api/dataset/create"
+
+        response = self.ctx.session.post(
+            url,
+            headers=self.ctx.headers(login=True),
+            data=json.dumps({
+                "datasetName": dataset_name,
+                "datasetDescription": dataset_description,
+            }),
+        )
+
+        if response.status_code == 200:
+            return response.json()["datasetId"]
+        else:
+            raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
