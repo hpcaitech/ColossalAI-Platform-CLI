@@ -4,8 +4,9 @@ import click
 import pathlib
 from typing import Iterable
 
-from colossalai_platform.cli.api import StorageType, UploadRequest, DatasetNotFoundError, DatasetDeleteFilesRequest, \
+from colossalai_platform.cli.api import DatasetNotFoundError, DatasetDeleteFilesRequest, \
     NoObjectToDeleteError
+from colossalai_platform.cli.commands.util import do_you_want_to_continue
 from colossalai_platform.cli.context import CommandContext
 
 LOGGER = logging.getLogger(__name__)
@@ -27,7 +28,7 @@ def upload_dir(
 
     # check if the dataset exists
     try:
-        info = cmd_ctx.api.dataset_info(dataset_id)
+        info = cmd_ctx.api.dataset().info(dataset_id)
     except DatasetNotFoundError as e:
         return click.echo(e)
 
@@ -44,15 +45,12 @@ The dataset content would be overwritten.
 """)
 
     if not yes:
-        y = click.prompt("Do you want to continue [y/N]")
-        if y != "y":
-            click.echo("Aborted!")
-            return
+        do_you_want_to_continue(ctx)
 
     click.echo(f"Clearing dataset {dataset_id}...")
 
     try:
-        cmd_ctx.api.dataset_delete_files(DatasetDeleteFilesRequest(
+        cmd_ctx.api.dataset().delete_files(DatasetDeleteFilesRequest(
             datasetId=dataset_id,
             folders=[""],
         ))
@@ -66,12 +64,9 @@ The dataset content would be overwritten.
 
         click.echo(f"{local_file_path} => {storage_path}")
 
-        cmd_ctx.api.upload(
-            req=UploadRequest(
-                storage_type=StorageType.DATASET,
-                storage_id=dataset_id,
-                storage_path=storage_path,
-            ),
+        cmd_ctx.api.dataset().upload_local_file(
+            dataset_id=dataset_id,
+            storage_path=storage_path,
             local_file_path=local_file_path,
         )
 

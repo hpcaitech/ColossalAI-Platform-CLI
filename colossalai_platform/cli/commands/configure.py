@@ -20,7 +20,7 @@ def configure(ctx: click.Context):
     cmd_ctx.config.password = click.prompt("Password (Hide input)", hide_input=True)
 
     try:
-        cmd_ctx.api.login()
+        cmd_ctx.api.user().login()
     except ApiError as e:
         click.echo(e)
         ctx.exit(1)
