@@ -31,8 +31,8 @@ class DatasetInfoResponse:
 
 
 @dataclass
-class DatasetDeleteFilesRequest:
-    datasetId: str
+class DeleteFilesRequest:
+    Id: str
     filePaths: List[str] = field(default_factory=list)
     folders: List[str] = field(default_factory=list)
 
@@ -46,7 +46,7 @@ class DatasetNotFoundError(Exception):
 class NoObjectToDeleteError(Exception):
 
     def __init__(self, dataset_id: str):
-        super().__init__(f"No object to delete in dataset {dataset_id}")
+        super().__init__(f"No object to delete in {dataset_id}")
 
 
 class Dataset:
@@ -110,7 +110,7 @@ class Dataset:
         else:
             raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
 
-    def delete_files(self, req: DatasetDeleteFilesRequest):
+    def delete_files(self, req: DeleteFilesRequest):
         url = self.ctx.config.api_server + "/api/dataset/file/delete"
 
         response = self.ctx.session.post(
@@ -118,14 +118,14 @@ class Dataset:
             headers=self.ctx.headers(login=True),
             data=json.dumps({
                 "filePaths": req.filePaths,
-                "datasetId": req.datasetId,
+                "datasetId": req.Id,
                 "folders": req.folders,
             }),
         )
 
         if response.status_code != 200 or (not response.json()["success"]):
             if response.status_code == 500 and ("You must specify at least one object" in response.json()["message"]):
-                raise NoObjectToDeleteError(req.datasetId)
+                raise NoObjectToDeleteError(req.Id)
             raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
 
     def upload_local_file(
