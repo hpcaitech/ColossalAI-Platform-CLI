@@ -2,7 +2,7 @@ import json
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List
+from typing import List, Union
 
 from colossalai_platform.cli.api.storage import Storage, UploadRequest, StorageType
 from colossalai_platform.cli.api.types import ApiError, Context
@@ -132,7 +132,7 @@ class Dataset:
         self,
         dataset_id: str,
         storage_path: str,
-        local_file_path: str | Path,
+        local_file_path: Union[str, Path],
     ):
         self.storage.upload(
             req=UploadRequest(

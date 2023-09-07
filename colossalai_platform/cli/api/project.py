@@ -2,7 +2,7 @@ import json
 import logging
 import pathlib
 from dataclasses import dataclass
-from typing import List
+from typing import List, Union
 
 from colossalai_platform.cli.api.dataset import DeleteFilesRequest, NoObjectToDeleteError
 from colossalai_platform.cli.api.storage import Storage, UploadRequest, StorageType
@@ -134,7 +134,7 @@ class Project:
         self,
         project_id: str,
         storage_path: str,
-        local_file_path: str | pathlib.Path,
+        local_file_path: Union[str, pathlib.Path],
     ):
         self.storage.upload(
             req=UploadRequest(

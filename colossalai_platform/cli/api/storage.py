@@ -4,7 +4,7 @@ import logging
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Tuple, List
+from typing import Tuple, List, Union
 from urllib.parse import urlparse, parse_qs
 
 from colossalai_platform.cli.api.types import ApiError, Context
@@ -31,7 +31,7 @@ class Storage:
     def upload(
         self,
         req: UploadRequest,
-        local_file_path: Path | str,
+        local_file_path: Union[Path, str],
     ):
         total_parts = 1 + local_file_path.stat().st_size // self.ctx.config.max_upload_chunk_bytes
         LOGGER.debug(f"Uploading {local_file_path} to {req.storage_type.value}://{req.storage_id}/{req.storage_path}")
@@ -121,7 +121,7 @@ class Storage:
     def _raw_multipart_upload(
         self,
         presigned_urls: List[str],
-        local_file_path: Path | str,
+        local_file_path: Union[Path, str],
         chunk_bytes: int,
     ) -> List[str]:
         etags = []
