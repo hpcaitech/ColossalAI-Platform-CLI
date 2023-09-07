@@ -145,8 +145,8 @@ class Dataset:
 
     def create(
         self,
-        dataset_name: str,
-        dataset_description: str,
+        name: str,
+        description: str,
     ) -> str:
         url = self.ctx.config.api_server + "/api/dataset/create"
 
@@ -154,8 +154,8 @@ class Dataset:
             url,
             headers=self.ctx.headers(login=True),
             data=json.dumps({
-                "datasetName": dataset_name,
-                "datasetDescription": dataset_description,
+                "datasetName": name,
+                "datasetDescription": description,
             }),
         )
 

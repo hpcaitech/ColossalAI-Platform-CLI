@@ -6,7 +6,8 @@ from colossalai_platform.cli.aliased_group import (CONTEXT_SETTINGS, AliasedGrou
 from colossalai_platform.cli.context import CommandContext
 from .api import ApiError
 
-from .commands import project, dataset, configure
+from .commands import dataset, configure
+from .commands.project import project
 
 LOGGER = logging.getLogger(__name__)
 
@@ -23,7 +24,10 @@ def configure_logging(debug=False):
     )
 
 
-REQUIRE_LOGIN = ["dataset"]
+REQUIRE_LOGIN = [
+    "dataset",
+    "project",
+]
 
 
 @click.command(cls=AliasedGroup, context_settings=CONTEXT_SETTINGS)
@@ -35,6 +39,8 @@ def cli(
 ):
     configure_logging(debug)
     ctx.obj = CommandContext()
+
+    LOGGER.debug(f"ctx.invoked_subcommand = {ctx.invoked_subcommand}")
 
     if ctx.invoked_subcommand in REQUIRE_LOGIN:
         # TODO(ofey404): persist token to file, rather than login every time
