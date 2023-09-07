@@ -55,7 +55,7 @@ class Storage:
         else:
             url = self._get_presigned_url(req)
 
-            with open(local_file_path) as f:
+            with open(local_file_path, "rb") as f:
                 content = f.read()
                 self._raw_upload(url, content)
 
@@ -107,7 +107,7 @@ class Storage:
         """Upload data to presigned_url and return the etag"""
         response = self.ctx.session.put(
             presigned_url,
-            data.encode("utf-8"),
+            data,
         )
         response.close()
 
