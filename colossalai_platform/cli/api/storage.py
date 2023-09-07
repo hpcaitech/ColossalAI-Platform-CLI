@@ -107,7 +107,7 @@ class Storage:
         """Upload data to presigned_url and return the etag"""
         response = self.ctx.session.put(
             presigned_url,
-            data,
+            data.encode("utf-8"),
         )
         response.close()
 
