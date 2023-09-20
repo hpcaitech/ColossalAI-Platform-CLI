@@ -3,15 +3,6 @@ import shutil
 
 import click
 
-from colossalai_platform.cli.aliased_group import (CONTEXT_SETTINGS, AliasedGroup)
-
-
-@click.command(cls=AliasedGroup,
-               context_settings=CONTEXT_SETTINGS,
-               help="Manage your projects for training and inference")
-def project():
-    pass
-
 
 @click.command(help='Initialize Your ColossalAI Template')
 @click.argument('name', required=1, type=str)
@@ -29,9 +20,9 @@ def init(name):
         os.mkdir(user_project_dir)
 
     # get the current file path
-    # the project files are located in current_file_path/projects
+    # the project files are located in current_file_path/project_template
     current_file_path = os.path.dirname(os.path.abspath(__file__))
-    project_file_dir = os.path.join(current_file_path, 'projects')
+    project_file_dir = os.path.join(current_file_path, 'project_template')
 
     # copy the files in project_file_dir to template_dir
     for file_name in os.listdir(project_file_dir):
@@ -55,7 +46,3 @@ def init(name):
                 dst_f.writelines(lines)
         else:
             shutil.copy(src_path, dst_path)
-
-
-# register command
-project.add_command(init)

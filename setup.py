@@ -22,7 +22,7 @@ def get_project_files():
     # get current file dir directory
     # the templates files are located in current_file_path/templates
     current_file_path = os.path.dirname(os.path.abspath(__file__))
-    project_file_dir = os.path.join(current_file_path, 'colossalai_platform/cli/commands/projects')
+    project_file_dir = os.path.join(current_file_path, 'colossalai_platform/cli/commands/project/project_template')
 
     # get all the files in project_file_dir
     project_files = []

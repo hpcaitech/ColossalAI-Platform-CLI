@@ -5,7 +5,7 @@ from colossalai_platform.cli.commands.util import do_you_want_to_continue
 from colossalai_platform.cli.context import CommandContext
 
 
-@click.command(help="Create a dataset")
+@click.command(help="Create a project")
 @click.option('--yes', '-y', is_flag=True, help='Skip confirmation.')
 @click.pass_context
 def create(
@@ -15,17 +15,17 @@ def create(
     cmd_ctx = ctx.find_object(CommandContext)
     assert cmd_ctx
 
-    click.echo(f"Create a dataset, user: {cmd_ctx.config.username}")
-    name = click.prompt("  Dataset name")
-    description = click.prompt("  Dataset description")
+    click.echo(f"Create a project, user: {cmd_ctx.config.username}")
+    name = click.prompt("  Project name")
+    description = click.prompt("  Project description")
 
     if not yes:
         do_you_want_to_continue(ctx)
 
     try:
-        dataset_id = cmd_ctx.api.dataset().create(name, description)
+        project_id = cmd_ctx.api.project().create(name, description)
     except ApiError as e:
         click.echo(e)
         ctx.exit(1)
 
-    click.echo(f"Dataset created successfully, id: {dataset_id}")
+    click.echo(f"Project created successfully, id: {project_id}")

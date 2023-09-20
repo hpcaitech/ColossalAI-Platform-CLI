@@ -2,7 +2,7 @@ import json
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List
+from typing import List, Union
 
 from colossalai_platform.cli.api.storage import Storage, UploadRequest, StorageType
 from colossalai_platform.cli.api.types import ApiError, Context
@@ -31,8 +31,8 @@ class DatasetInfoResponse:
 
 
 @dataclass
-class DatasetDeleteFilesRequest:
-    datasetId: str
+class DeleteFilesRequest:
+    Id: str
     filePaths: List[str] = field(default_factory=list)
     folders: List[str] = field(default_factory=list)
 
@@ -46,7 +46,7 @@ class DatasetNotFoundError(Exception):
 class NoObjectToDeleteError(Exception):
 
     def __init__(self, dataset_id: str):
-        super().__init__(f"No object to delete in dataset {dataset_id}")
+        super().__init__(f"No object to delete in {dataset_id}")
 
 
 class Dataset:
@@ -110,7 +110,7 @@ class Dataset:
         else:
             raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
 
-    def delete_files(self, req: DatasetDeleteFilesRequest):
+    def delete_files(self, req: DeleteFilesRequest):
         url = self.ctx.config.api_server + "/api/dataset/file/delete"
 
         response = self.ctx.session.post(
@@ -118,21 +118,21 @@ class Dataset:
             headers=self.ctx.headers(login=True),
             data=json.dumps({
                 "filePaths": req.filePaths,
-                "datasetId": req.datasetId,
+                "datasetId": req.Id,
                 "folders": req.folders,
             }),
         )
 
         if response.status_code != 200 or (not response.json()["success"]):
             if response.status_code == 500 and ("You must specify at least one object" in response.json()["message"]):
-                raise NoObjectToDeleteError(req.datasetId)
+                raise NoObjectToDeleteError(req.Id)
             raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
 
     def upload_local_file(
         self,
         dataset_id: str,
         storage_path: str,
-        local_file_path: str | Path,
+        local_file_path: Union[str, Path],
     ):
         self.storage.upload(
             req=UploadRequest(
@@ -145,8 +145,8 @@ class Dataset:
 
     def create(
         self,
-        dataset_name: str,
-        dataset_description: str,
+        name: str,
+        description: str,
     ) -> str:
         url = self.ctx.config.api_server + "/api/dataset/create"
 
@@ -154,8 +154,8 @@ class Dataset:
             url,
             headers=self.ctx.headers(login=True),
             data=json.dumps({
-                "datasetName": dataset_name,
-                "datasetDescription": dataset_description,
+                "datasetName": name,
+                "datasetDescription": description,
             }),
         )
 
