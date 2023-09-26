@@ -26,3 +26,15 @@ def configure(ctx: click.Context):
         ctx.exit(1)
 
     cmd_ctx.dump_to_dir()
+
+    click.echo("""Login successfully!
+
+Thank you for choosing the ColossalAI Platform!
+During our public beta phase, we're actively developing and improving the platform. We appreciate your patience with any user experience issues.
+
+For assistance, visit [doc link](TODO) or reach out anytime.
+Your feedback is valuable as we strive to enhance your experience.
+""")
+
+
+# TODO(ofey404): Add a link to the doc page containing `support contact`.
