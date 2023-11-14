@@ -39,7 +39,7 @@ def upload_dir(
         Name: {info.datasetName}
         FullName: {info.datasetFullName}
         Description: {info.datasetDescription}
-        CreatedAt: {info.createdAt}
+        CreatedAt: {info.createAt}
 
 The dataset content would be overwritten.
 """)

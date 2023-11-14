@@ -22,14 +22,22 @@ class Context:
     session: requests.Session = requests.Session()
 
     def headers(
-        self,
-        login=False,
+            self,
+            login=False,
     ):
         headers = {
             'Content-Type': 'application/json',
         }
         if login:
-            if self.token == "":
-                raise LoginRequiredError()
-            headers["Authorization"] = "Bearer " + self.token
+            headers = {
+                **headers,
+                **self.bearer_token_header(),
+            }
         return headers
+
+    def bearer_token_header(self) -> dict:
+        if self.token == "":
+            raise LoginRequiredError()
+        return {
+            "Authorization": "Bearer " + self.token,
+        }

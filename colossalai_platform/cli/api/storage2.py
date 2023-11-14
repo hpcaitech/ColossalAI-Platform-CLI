@@ -11,36 +11,18 @@ LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
-class StorageUploadRequest:
+class UploadRequest:
     id: str
     path: str
 
-
 @dataclass
-class Storage2:
-    ctx: Context
-    url: str
-
-    def upload(
-            self,
-            req: StorageUploadRequest,
-            local_file_path: Union[Path, str],
-    ):
-        LOGGER.debug(f"Uploading {local_file_path} to {req.id}, {req.path}")
-        MultipartUploader(self.ctx, self.url).upload(
-            req,
-            local_file_path,
-        )
-
-
-@dataclass
-class MultipartUploader:
+class MultiPartUploader:
     ctx: Context
     url: str
 
     # intermediate data.
     # To simplify the logic, we only assign them explicitly in the upload() method.
-    _req: StorageUploadRequest = None
+    _req: UploadRequest = None
     _upload_id: str = None
     _etags: list[str] = None
 
@@ -50,21 +32,20 @@ class MultipartUploader:
 
     def upload(
             self,
-            req: StorageUploadRequest,
+            req: UploadRequest,
             local_file_path: Union[Path, str],
     ):
         self._req = req
-        self._upload_id = self._start_multipart_upload
         self._file_size = local_file_path.stat().st_size
         self._chunk_size = self.ctx.config.max_upload_chunk_bytes
         self._number_of_chunks = 1 + (self._file_size // self._chunk_size)
+        self._upload_id = self._start_multipart_upload()
 
         with open(local_file_path, "rb") as f:
             self._etags = self._multipart_upload(f)
 
         self._merge_multipart_upload()
 
-    @property
     def _start_multipart_upload(self) -> str:
         url = self.url + "/uploadStart"
 
@@ -83,6 +64,8 @@ class MultipartUploader:
             raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
 
     def _multipart_upload(self, f: BinaryIO) -> list[str]:
+        LOGGER.debug(f"start multipart upload, number_of_chunks = {self._number_of_chunks}")
+
         etags = []
         for i in range(self._number_of_chunks):
             chunk_size = min(
@@ -132,7 +115,7 @@ class MultipartUploader:
         url = self.url + "/upload"
         response = self.ctx.session.post(
             url,
-            headers=self.ctx.headers(login=True),
+            headers=self.ctx.bearer_token_header(),
             files={
                 'uploadId': (None, self._upload_id),
                 'chunkNumber': (None, str(chunk_number)),

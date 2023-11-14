@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Union
 
-from colossalai_platform.cli.api.storage import Storage, UploadRequest, StorageType
+from colossalai_platform.cli.api.storage2 import MultiPartUploader, UploadRequest
 from colossalai_platform.cli.api.types import ApiError, Context
 
 LOGGER = logging.getLogger(__name__)
@@ -25,8 +25,8 @@ class DatasetInfoResponse:
     datasetName: str
     datasetFullName: str
     datasetDescription: str
-    createdAt: str
-    private: bool
+    createAt: str
+    isPrivate: bool
     isOwned: bool
 
 
@@ -53,11 +53,14 @@ class Dataset:
 
     def __init__(self, ctx: Context):
         self.ctx = ctx
-        self.storage = Storage(ctx)
+        self.uploader = MultiPartUploader(
+            ctx,
+            self.ctx.config.api_server + "/api/file/dataset",
+        )
 
     def list(
-        self,
-        is_owned=True,
+            self,
+            is_owned=True,
     ) -> List[DatasetListResponse]:
         url = self.ctx.config.api_server + "/api/dataset/list"
 
@@ -112,14 +115,14 @@ class Dataset:
             raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
 
     def delete_files(self, req: DeleteFilesRequest):
-        url = self.ctx.config.api_server + "/api/dataset/file/delete"
+        url = self.ctx.config.api_server + "/api/file/dataset/delete"
 
         response = self.ctx.session.post(
             url,
             headers=self.ctx.headers(login=True),
             data=json.dumps({
                 "filePaths": req.filePaths,
-                "datasetId": req.Id,
+                "id": req.Id,
                 "folders": req.folders,
             }),
         )
@@ -130,24 +133,23 @@ class Dataset:
             raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
 
     def upload_local_file(
-        self,
-        dataset_id: str,
-        storage_path: str,
-        local_file_path: Union[str, Path],
+            self,
+            dataset_id: str,
+            storage_path: str,
+            local_file_path: Union[str, Path],
     ):
-        self.storage.upload(
+        self.uploader.upload(
             req=UploadRequest(
-                storage_type=StorageType.DATASET,
-                storage_id=dataset_id,
-                storage_path=storage_path,
+                id=dataset_id,
+                path=storage_path,
             ),
             local_file_path=local_file_path,
         )
 
     def create(
-        self,
-        name: str,
-        description: str,
+            self,
+            name: str,
+            description: str,
     ) -> str:
         url = self.ctx.config.api_server + "/api/dataset/create"
 
