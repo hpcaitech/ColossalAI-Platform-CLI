@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Union
 
-from colossalai_platform.cli.api.storage2 import MultiPartUploader, UploadRequest
+from colossalai_platform.cli.api.multipart_upload import MultiPartUploader, UploadRequest
 from colossalai_platform.cli.api.types import ApiError, Context
 
 LOGGER = logging.getLogger(__name__)
