@@ -5,7 +5,7 @@ from colossalai_platform.cli.commands.util import do_you_want_to_continue
 from colossalai_platform.cli.context import CommandContext
 
 
-@click.command(help="Create a dataset")
+@click.command(help="Create an empty dataset")
 @click.option('--yes', '-y', is_flag=True, help='Skip confirmation.')
 @click.pass_context
 def create(
@@ -15,7 +15,7 @@ def create(
     cmd_ctx = ctx.find_object(CommandContext)
     assert cmd_ctx
 
-    click.echo(f"Create a dataset, user: {cmd_ctx.config.username}")
+    click.echo(f"Create an empty dataset, user: {cmd_ctx.config.username}")
     name = click.prompt("  Dataset name")
     description = click.prompt("  Dataset description")
 

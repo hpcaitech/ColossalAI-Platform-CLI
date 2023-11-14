@@ -33,7 +33,7 @@ def upload_dir(
         ID: {project_id}
         Name: {info.projectName}
         Description: {info.projectDescription}
-        CreatedAt: {info.createdAt}
+        CreatedAt: {info.createAt}
 
 The project content would be overwritten.
 """)

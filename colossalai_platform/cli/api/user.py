@@ -11,7 +11,7 @@ LOGGER = logging.getLogger(__name__)
 class User:
     ctx: Context
 
-    def login(self) -> str:
+    def login(self):
         url = self.ctx.config.api_server + "/api/user/login"
 
         if self.ctx.config.username == "" or self.ctx.config.password == "":
@@ -27,7 +27,10 @@ class User:
         )
 
         if response.status_code == 200:
-            self.ctx.token = response.json()['accessToken']
-            LOGGER.debug(f"Login success, token: {self.ctx.token}")
+            try:
+                self.ctx.token = response.json()['accessToken']
+                LOGGER.debug(f"Login success, token: {self.ctx.token}")
+            except Exception as e:
+                raise ApiError(f"Login failed, exception: {e}, response body: {response.text}")
         else:
             raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")

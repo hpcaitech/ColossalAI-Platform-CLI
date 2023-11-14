@@ -5,7 +5,8 @@ from dataclasses import dataclass
 from typing import List, Union
 
 from colossalai_platform.cli.api.dataset import DeleteFilesRequest, NoObjectToDeleteError
-from colossalai_platform.cli.api.storage import Storage, UploadRequest, StorageType
+
+from colossalai_platform.cli.api.multipart_upload import MultiPartUploader, UploadRequest
 from colossalai_platform.cli.api.types import Context, ApiError
 
 LOGGER = logging.getLogger(__name__)
@@ -15,7 +16,7 @@ LOGGER = logging.getLogger(__name__)
 class ProjectListResponse:
     projectName: str
     projectDescription: str
-    createdAt: str
+    createAt: str
     projectId: str
 
 
@@ -23,7 +24,7 @@ class ProjectListResponse:
 class ProjectInfoResponse:
     projectName: str
     projectDescription: str
-    createdAt: str
+    createAt: str
     projectId: str
 
 
@@ -37,7 +38,10 @@ class Project:
 
     def __init__(self, ctx: Context):
         self.ctx = ctx
-        self.storage = Storage(ctx)
+        self.storage = MultiPartUploader(
+            ctx,
+            self.ctx.config.api_server + "/api/file/project",
+            )
 
     def create(
         self,
@@ -90,6 +94,7 @@ class Project:
             else:
                 current_page += 1
 
+        LOGGER.debug(f"list response: {merged}")
         return [ProjectListResponse(**d) for d in merged]
 
     def info(self, project_id: str) -> ProjectInfoResponse:
@@ -113,14 +118,14 @@ class Project:
             raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
 
     def delete_files(self, req: DeleteFilesRequest):
-        url = self.ctx.config.api_server + "/api/project/file/delete"
+        url = self.ctx.config.api_server + "/api/file/project/delete"
 
         response = self.ctx.session.post(
             url,
             headers=self.ctx.headers(login=True),
             data=json.dumps({
                 "filePaths": req.filePaths,
-                "projectId": req.Id,
+                "id": req.Id,
                 "folders": req.folders,
             }),
         )
@@ -138,9 +143,8 @@ class Project:
     ):
         self.storage.upload(
             req=UploadRequest(
-                storage_type=StorageType.PROJECT,
-                storage_id=project_id,
-                storage_path=storage_path,
+                id=project_id,
+                path=storage_path,
             ),
             local_file_path=local_file_path,
         )
