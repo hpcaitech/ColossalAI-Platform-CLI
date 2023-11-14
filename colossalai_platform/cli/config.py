@@ -2,7 +2,7 @@ from pydantic import BaseModel, HttpUrl
 
 
 class Config(BaseModel):
-    api_server: str = "https://101.126.46.176"
+    api_server: str = "https://180.184.83.159"
     username: str = ""
     password: str = ""
     max_upload_chunk_bytes: int = 100 * 1024 * 1024    # 100MB
