@@ -13,7 +13,7 @@ def list_dataset(ctx: click.Context,):
 
     datasets = cmd_ctx.api.dataset().list()
 
-    for i, d in enumerate(datasets):
+    for d in datasets:
         _pretty_print_dataset(d)
 
 
