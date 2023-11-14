@@ -26,6 +26,7 @@ def configure_logging(debug=False):
 REQUIRE_LOGIN = [
     "dataset",
     "project",
+    "model",
 ]
 
 
