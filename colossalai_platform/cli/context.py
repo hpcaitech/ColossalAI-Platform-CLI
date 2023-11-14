@@ -21,7 +21,7 @@ class BaseCommandContext:
     code at CommandContext's `__init__` method
     """
     dir: Path = Path.home() / ".colossalai-platform"
-    config: Config = Config()
+    config: Config = Config().check_format()
     api: ColossalPlatformApi = None
 
 

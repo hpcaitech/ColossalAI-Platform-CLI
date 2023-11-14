@@ -25,6 +25,6 @@ def _pretty_print_project(
     s = f"""Name: {p.projectName}
 ID: {p.projectId}
 Description: {p.projectDescription}
-Created At: {p.createdAt}
+Created At: {p.createAt}
 """
     click.echo(textwrap.indent(s, " " * indent))

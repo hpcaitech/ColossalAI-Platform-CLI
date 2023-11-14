@@ -25,6 +25,6 @@ def _pretty_print_dataset(
 ID: {d.datasetId}
 Full Name: {d.datasetFullName}
 Description: {d.datasetDescription}
-Created At: {d.createdAt}
+Created At: {d.createAt}
 """
     click.echo(textwrap.indent(s, " " * indent))

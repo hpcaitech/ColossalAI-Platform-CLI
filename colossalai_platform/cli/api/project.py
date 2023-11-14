@@ -15,7 +15,7 @@ LOGGER = logging.getLogger(__name__)
 class ProjectListResponse:
     projectName: str
     projectDescription: str
-    createdAt: str
+    createAt: str
     projectId: str
 
 
@@ -90,6 +90,7 @@ class Project:
             else:
                 current_page += 1
 
+        LOGGER.debug(f"list response: {merged}")
         return [ProjectListResponse(**d) for d in merged]
 
     def info(self, project_id: str) -> ProjectInfoResponse:

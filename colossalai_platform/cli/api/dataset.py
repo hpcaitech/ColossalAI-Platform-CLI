@@ -15,7 +15,7 @@ class DatasetListResponse:
     datasetName: str
     datasetFullName: str
     datasetDescription: str
-    createdAt: str
+    createAt: str
     datasetId: str
 
 
@@ -88,6 +88,7 @@ class Dataset:
             else:
                 current_page += 1
 
+        LOGGER.debug(f"list response: {merged_datasets}")
         return [DatasetListResponse(**d) for d in merged_datasets]
 
     def info(self, dataset_id: str) -> DatasetInfoResponse:
