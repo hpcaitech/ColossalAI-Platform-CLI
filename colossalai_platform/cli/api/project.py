@@ -5,6 +5,7 @@ from typing import List, Union
 
 from colossalai_platform.cli.api.dataset import DeleteFilesRequest, NoObjectToDeleteError
 from colossalai_platform.cli.api.utils.multipart_upload import MultiPartUploader, UploadRequest
+from colossalai_platform.cli.api.utils.pager import RequestAutoPager
 from colossalai_platform.cli.api.utils.types import Context, ApiError
 
 LOGGER = logging.getLogger(__name__)
@@ -39,12 +40,12 @@ class Project:
         self.storage = MultiPartUploader(
             ctx,
             self.ctx.config.api_server + "/api/file/project",
-            )
+        )
 
     def create(
-        self,
-        name: str,
-        description: str,
+            self,
+            name: str,
+            description: str,
     ) -> str:
         url = self.ctx.config.api_server + "/api/project/create"
 
@@ -62,87 +63,70 @@ class Project:
         else:
             raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
 
-    def list(self,) -> List[ProjectListResponse]:
+    def list(self, ) -> List[ProjectListResponse]:
         url = self.ctx.config.api_server + "/api/project/list"
 
         current_page = 1
-        merged = []
-
-        while True:
-            response = self.ctx.session.post(
-                url,
-                headers=self.ctx.headers(login=True),
-                json={
-                    "pager": {
-                        "pageSize": 10,
-                        "currentPage": current_page,
-                    },
-                },
-            )
-
-            if response.status_code != 200:
-                raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
-
-            merged.extend(response.json()["projects"])
-
-            total_entries = response.json()["pager"]["totalEntries"]
-            page_size = response.json()["pager"]["pageSize"]
-            if page_size * current_page > total_entries:
-                break
-            else:
-                current_page += 1
+        merged = RequestAutoPager(self.ctx).post(
+            url,
+            headers=self.ctx.headers(login=True),
+            extract_func=lambda response: response.json()["projects"],
+        )
 
         LOGGER.debug(f"list response: {merged}")
         return [ProjectListResponse(**d) for d in merged]
 
-    def info(self, project_id: str) -> ProjectInfoResponse:
-        url = self.ctx.config.api_server + "/api/project/info"
 
-        response = self.ctx.session.post(
-            url,
-            headers=self.ctx.headers(login=True),
-            json={
-                "projectId": project_id,
-            },
-        )
+def info(self, project_id: str) -> ProjectInfoResponse:
+    url = self.ctx.config.api_server + "/api/project/info"
 
-        if response.status_code == 200:
-            LOGGER.debug(f"project_info response: {response.json()}")
-            return ProjectInfoResponse(**response.json())
-        elif response.status_code == 404:
-            if response.json()["message"] == "project not found":
-                raise ProjectNotFoundError(project_id)
-        else:
-            raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
+    response = self.ctx.session.post(
+        url,
+        headers=self.ctx.headers(login=True),
+        json={
+            "projectId": project_id,
+        },
+    )
 
-    def delete_files(self, req: DeleteFilesRequest):
-        url = self.ctx.config.api_server + "/api/file/project/delete"
+    if response.status_code == 200:
+        LOGGER.debug(f"project_info response: {response.json()}")
+        return ProjectInfoResponse(**response.json())
+    elif response.status_code == 404:
+        if response.json()["message"] == "project not found":
+            raise ProjectNotFoundError(project_id)
+    else:
+        raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
 
-        response = self.ctx.session.post(
-            url,
-            headers=self.ctx.headers(login=True),
-            json={
-                "filePaths": req.filePaths,
-                "id": req.id,
-                "folders": req.folders,
-            },
-        )
 
-        if response.status_code != 200 or (not response.json()["success"]):
-            if response.status_code == 500 and ("You must specify at least one object" in response.json()["message"]):
-                raise NoObjectToDeleteError(req.id)
-            raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
+def delete_files(self, req: DeleteFilesRequest):
+    url = self.ctx.config.api_server + "/api/file/project/delete"
 
-    def upload_local_file(
+    response = self.ctx.session.post(
+        url,
+        headers=self.ctx.headers(login=True),
+        json={
+            "filePaths": req.filePaths,
+            "id": req.id,
+            "folders": req.folders,
+        },
+    )
+
+    if response.status_code != 200 or (not response.json()["success"]):
+        if response.status_code == 500 and ("You must specify at least one object" in response.json()["message"]):
+            raise NoObjectToDeleteError(req.id)
+        raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
+
+
+def upload_local_file(
         self,
         project_id: str,
         storage_path: str,
         local_file_path: Union[str, pathlib.Path],
-    ):
-        self.storage.upload(
-            req=UploadRequest(
-                id=project_id,
-                path=storage_path,
-            ),
-            local_file_path=local_file_path,
-        )
+):
+    self.storage.upload(
+        req=UploadRequest(
+            id=project_id,
+            path=storage_path,
+        ),
+        local_file_path=local_file_path,
+    )

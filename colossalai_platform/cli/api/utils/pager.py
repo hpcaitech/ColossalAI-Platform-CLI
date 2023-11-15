@@ -23,6 +23,9 @@ class RequestAutoPager:
             pager_options: RequestAutoPagerOptions = RequestAutoPagerOptions(),
             **kwargs,
     ):
+        if json is None:
+            json = {}
+
         current_page = 1
         merged_response = []
         while True:
