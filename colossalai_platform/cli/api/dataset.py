@@ -1,11 +1,11 @@
-import json
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Union
 
-from colossalai_platform.cli.api.multipart_upload import MultiPartUploader, UploadRequest
-from colossalai_platform.cli.api.types import ApiError, Context
+from colossalai_platform.cli.api.utils.multipart_upload import MultiPartUploader, UploadRequest
+from colossalai_platform.cli.api.utils.pager import RequestAutoPager
+from colossalai_platform.cli.api.utils.types import ApiError, Context
 
 LOGGER = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class DatasetInfoResponse:
 
 @dataclass
 class DeleteFilesRequest:
-    Id: str
+    id: str
     filePaths: List[str] = field(default_factory=list)
     folders: List[str] = field(default_factory=list)
 
@@ -64,32 +64,14 @@ class Dataset:
     ) -> List[DatasetListResponse]:
         url = self.ctx.config.api_server + "/api/dataset/list"
 
-        current_page = 1
-        merged_datasets = []
-        while True:
-            response = self.ctx.session.post(
-                url,
-                headers=self.ctx.headers(login=True),
-                data=json.dumps({
-                    "isOwned": is_owned,
-                    "pager": {
-                        "pageSize": 10,
-                        "currentPage": current_page,
-                    },
-                }),
-            )
-
-            if response.status_code != 200:
-                raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
-
-            merged_datasets.extend(response.json()["datasets"])
-
-            total_entries = response.json()["pager"]["totalEntries"]
-            page_size = response.json()["pager"]["pageSize"]
-            if page_size * current_page > total_entries:
-                break
-            else:
-                current_page += 1
+        merged_datasets = RequestAutoPager(self.ctx).post(
+            url,
+            headers=self.ctx.headers(login=True),
+            json={
+                "isOwned": is_owned,
+            },
+            extract_func=lambda response: response.json()["datasets"],
+        )
 
         LOGGER.debug(f"list response: {merged_datasets}")
         return [DatasetListResponse(**d) for d in merged_datasets]
@@ -100,9 +82,9 @@ class Dataset:
         response = self.ctx.session.post(
             url,
             headers=self.ctx.headers(login=True),
-            data=json.dumps({
+            json={
                 "datasetId": dataset_id,
-            }),
+            },
         )
 
         if response.status_code == 200:
@@ -120,16 +102,16 @@ class Dataset:
         response = self.ctx.session.post(
             url,
             headers=self.ctx.headers(login=True),
-            data=json.dumps({
+            json={
                 "filePaths": req.filePaths,
-                "id": req.Id,
+                "id": req.id,
                 "folders": req.folders,
-            }),
+            },
         )
 
         if response.status_code != 200 or (not response.json()["success"]):
             if response.status_code == 500 and ("You must specify at least one object" in response.json()["message"]):
-                raise NoObjectToDeleteError(req.Id)
+                raise NoObjectToDeleteError(req.id)
             raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
 
     def upload_local_file(
@@ -156,10 +138,10 @@ class Dataset:
         response = self.ctx.session.post(
             url,
             headers=self.ctx.headers(login=True),
-            data=json.dumps({
+            json={
                 "datasetName": name,
                 "datasetDescription": description,
-            }),
+            },
         )
 
         if response.status_code == 200:

@@ -6,8 +6,7 @@ from colossalai_platform.cli.aliased_group import (CONTEXT_SETTINGS, AliasedGrou
 from colossalai_platform.cli.context import CommandContext
 from .api import ApiError
 
-from .commands import dataset, configure
-from .commands.project import project
+from .commands import dataset, configure, project, model
 
 LOGGER = logging.getLogger(__name__)
 
@@ -27,6 +26,7 @@ def configure_logging(debug=False):
 REQUIRE_LOGIN = [
     "dataset",
     "project",
+    "model",
 ]
 
 
@@ -55,3 +55,4 @@ def cli(
 cli.add_command(configure)
 cli.add_command(project)
 cli.add_command(dataset)
+cli.add_command(model)

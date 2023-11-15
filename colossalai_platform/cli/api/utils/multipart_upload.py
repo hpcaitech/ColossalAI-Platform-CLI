@@ -1,11 +1,10 @@
-import json
 import logging
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Union, BinaryIO
 
-from colossalai_platform.cli.api.types import Context, ApiError
+from colossalai_platform.cli.api.utils.types import Context, ApiError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -52,10 +51,10 @@ class MultiPartUploader:
         response = self.ctx.session.post(
             url,
             headers=self.ctx.headers(login=True),
-            data=json.dumps({
+            json={
                 "id": self._req.id,
                 "numberOfSlices": self._number_of_chunks,
-            }),
+            },
         )
 
         if response.status_code == 200:
@@ -89,7 +88,7 @@ class MultiPartUploader:
         response = self.ctx.session.post(
             url,
             headers=self.ctx.headers(login=True),
-            data=json.dumps({
+            json={
                 "uploadId": self._upload_id,
                 "id": self._req.id,
                 "filePath": self._req.path,
@@ -100,7 +99,7 @@ class MultiPartUploader:
                     }
                     for i, etag in enumerate(self._etags)
                 ]
-            }),
+            },
         )
 
         if response.status_code != 200 or response.json()["success"] != True:

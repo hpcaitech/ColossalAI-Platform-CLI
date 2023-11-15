@@ -45,7 +45,7 @@ The project content would be overwritten.
 
     try:
         cmd_ctx.api.project().delete_files(DeleteFilesRequest(
-            Id=project_id,
+            id=project_id,
             folders=[""],
         ))
     except NoObjectToDeleteError:
