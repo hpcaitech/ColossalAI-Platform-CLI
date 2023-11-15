@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import List, Union
 
 from colossalai_platform.cli.api.utils.multipart_upload import MultiPartUploader, UploadRequest
+from colossalai_platform.cli.api.utils.pager import RequestAutoPager
 from colossalai_platform.cli.api.utils.types import ApiError, Context
 
 LOGGER = logging.getLogger(__name__)
@@ -63,32 +64,14 @@ class Dataset:
     ) -> List[DatasetListResponse]:
         url = self.ctx.config.api_server + "/api/dataset/list"
 
-        current_page = 1
-        merged_datasets = []
-        while True:
-            response = self.ctx.session.post(
-                url,
-                headers=self.ctx.headers(login=True),
-                json={
-                    "isOwned": is_owned,
-                    "pager": {
-                        "pageSize": 10,
-                        "currentPage": current_page,
-                    },
-                },
-            )
-
-            if response.status_code != 200:
-                raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
-
-            merged_datasets.extend(response.json()["datasets"])
-
-            total_entries = response.json()["pager"]["totalEntries"]
-            page_size = response.json()["pager"]["pageSize"]
-            if page_size * current_page > total_entries:
-                break
-            else:
-                current_page += 1
+        merged_datasets = RequestAutoPager(self.ctx).post(
+            url,
+            headers=self.ctx.headers(login=True),
+            json={
+                "isOwned": is_owned,
+            },
+            extract_func=lambda response: response.json()["datasets"],
+        )
 
         LOGGER.debug(f"list response: {merged_datasets}")
         return [DatasetListResponse(**d) for d in merged_datasets]
