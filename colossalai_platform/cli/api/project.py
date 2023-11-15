@@ -77,56 +77,56 @@ class Project:
         return [ProjectListResponse(**d) for d in merged]
 
 
-def info(self, project_id: str) -> ProjectInfoResponse:
-    url = self.ctx.config.api_server + "/api/project/info"
+    def info(self, project_id: str) -> ProjectInfoResponse:
+        url = self.ctx.config.api_server + "/api/project/info"
 
-    response = self.ctx.session.post(
-        url,
-        headers=self.ctx.headers(login=True),
-        json={
-            "projectId": project_id,
-        },
-    )
+        response = self.ctx.session.post(
+            url,
+            headers=self.ctx.headers(login=True),
+            json={
+                "projectId": project_id,
+            },
+        )
 
-    if response.status_code == 200:
-        LOGGER.debug(f"project_info response: {response.json()}")
-        return ProjectInfoResponse(**response.json())
-    elif response.status_code == 404:
-        if response.json()["message"] == "project not found":
-            raise ProjectNotFoundError(project_id)
-    else:
-        raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
-
-
-def delete_files(self, req: DeleteFilesRequest):
-    url = self.ctx.config.api_server + "/api/file/project/delete"
-
-    response = self.ctx.session.post(
-        url,
-        headers=self.ctx.headers(login=True),
-        json={
-            "filePaths": req.filePaths,
-            "id": req.id,
-            "folders": req.folders,
-        },
-    )
-
-    if response.status_code != 200 or (not response.json()["success"]):
-        if response.status_code == 500 and ("You must specify at least one object" in response.json()["message"]):
-            raise NoObjectToDeleteError(req.id)
-        raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
+        if response.status_code == 200:
+            LOGGER.debug(f"project_info response: {response.json()}")
+            return ProjectInfoResponse(**response.json())
+        elif response.status_code == 404:
+            if response.json()["message"] == "project not found":
+                raise ProjectNotFoundError(project_id)
+        else:
+            raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
 
 
-def upload_local_file(
-        self,
-        project_id: str,
-        storage_path: str,
-        local_file_path: Union[str, pathlib.Path],
-):
-    self.storage.upload(
-        req=UploadRequest(
-            id=project_id,
-            path=storage_path,
-        ),
-        local_file_path=local_file_path,
-    )
+    def delete_files(self, req: DeleteFilesRequest):
+        url = self.ctx.config.api_server + "/api/file/project/delete"
+
+        response = self.ctx.session.post(
+            url,
+            headers=self.ctx.headers(login=True),
+            json={
+                "filePaths": req.filePaths,
+                "id": req.id,
+                "folders": req.folders,
+            },
+        )
+
+        if response.status_code != 200 or (not response.json()["success"]):
+            if response.status_code == 500 and ("You must specify at least one object" in response.json()["message"]):
+                raise NoObjectToDeleteError(req.id)
+            raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
+
+
+    def upload_local_file(
+            self,
+            project_id: str,
+            storage_path: str,
+            local_file_path: Union[str, pathlib.Path],
+    ):
+        self.storage.upload(
+            req=UploadRequest(
+                id=project_id,
+                path=storage_path,
+            ),
+            local_file_path=local_file_path,
+        )
