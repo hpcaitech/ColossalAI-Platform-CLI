@@ -1,11 +1,9 @@
-import json
 import logging
 import pathlib
 from dataclasses import dataclass
 from typing import List, Union
 
 from colossalai_platform.cli.api.dataset import DeleteFilesRequest, NoObjectToDeleteError
-
 from colossalai_platform.cli.api.multipart_upload import MultiPartUploader, UploadRequest
 from colossalai_platform.cli.api.types import Context, ApiError
 
@@ -53,10 +51,10 @@ class Project:
         response = self.ctx.session.post(
             url,
             headers=self.ctx.headers(login=True),
-            data=json.dumps({
+            json={
                 "projectName": name,
                 "projectDescription": description,
-            }),
+            },
         )
 
         if response.status_code == 200:
@@ -74,12 +72,12 @@ class Project:
             response = self.ctx.session.post(
                 url,
                 headers=self.ctx.headers(login=True),
-                data=json.dumps({
+                json={
                     "pager": {
                         "pageSize": 10,
                         "currentPage": current_page,
                     },
-                }),
+                },
             )
 
             if response.status_code != 200:
@@ -103,9 +101,9 @@ class Project:
         response = self.ctx.session.post(
             url,
             headers=self.ctx.headers(login=True),
-            data=json.dumps({
+            json={
                 "projectId": project_id,
-            }),
+            },
         )
 
         if response.status_code == 200:
@@ -123,11 +121,11 @@ class Project:
         response = self.ctx.session.post(
             url,
             headers=self.ctx.headers(login=True),
-            data=json.dumps({
+            json={
                 "filePaths": req.filePaths,
                 "id": req.id,
                 "folders": req.folders,
-            }),
+            },
         )
 
         if response.status_code != 200 or (not response.json()["success"]):

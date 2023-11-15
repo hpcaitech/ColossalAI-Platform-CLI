@@ -70,13 +70,13 @@ class Dataset:
             response = self.ctx.session.post(
                 url,
                 headers=self.ctx.headers(login=True),
-                data=json.dumps({
+                json={
                     "isOwned": is_owned,
                     "pager": {
                         "pageSize": 10,
                         "currentPage": current_page,
                     },
-                }),
+                },
             )
 
             if response.status_code != 200:
@@ -100,9 +100,9 @@ class Dataset:
         response = self.ctx.session.post(
             url,
             headers=self.ctx.headers(login=True),
-            data=json.dumps({
+            json={
                 "datasetId": dataset_id,
-            }),
+            },
         )
 
         if response.status_code == 200:
@@ -120,11 +120,11 @@ class Dataset:
         response = self.ctx.session.post(
             url,
             headers=self.ctx.headers(login=True),
-            data=json.dumps({
+            json={
                 "filePaths": req.filePaths,
                 "id": req.id,
                 "folders": req.folders,
-            }),
+            },
         )
 
         if response.status_code != 200 or (not response.json()["success"]):
@@ -156,10 +156,10 @@ class Dataset:
         response = self.ctx.session.post(
             url,
             headers=self.ctx.headers(login=True),
-            data=json.dumps({
+            json={
                 "datasetName": name,
                 "datasetDescription": description,
-            }),
+            },
         )
 
         if response.status_code == 200:

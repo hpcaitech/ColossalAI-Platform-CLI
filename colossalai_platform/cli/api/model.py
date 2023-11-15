@@ -1,8 +1,7 @@
+import logging
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Union
-from dataclasses import dataclass, field
-import json
-import logging
 
 from colossalai_platform.cli.api.multipart_upload import MultiPartUploader, UploadRequest
 from colossalai_platform.cli.api.types import Context, ApiError
@@ -65,14 +64,14 @@ class Model:
             response = self.ctx.session.post(
                 url,
                 headers=self.ctx.headers(login=True),
-                data=json.dumps({
+                json={
                     "tags": tags,
                     "isOwned": is_owned,
                     "pager": {
                         "pageSize": 10,
                         "currentPage": current_page,
                     },
-                }),
+                },
             )
 
             if response.status_code != 200:
@@ -99,10 +98,10 @@ class Model:
         response = self.ctx.session.post(
             url,
             headers=self.ctx.headers(login=True),
-            data=json.dumps({
+            json={
                 "modelName": name,
                 "modelDescription": description,
-            }),
+            },
         )
 
         if response.status_code == 200:
@@ -116,9 +115,9 @@ class Model:
         response = self.ctx.session.post(
             url,
             headers=self.ctx.headers(login=True),
-            data=json.dumps({
+            json={
                 "modelId": model_id,
-            }),
+            },
         )
 
         if response.status_code == 200:
@@ -133,11 +132,11 @@ class Model:
         response = self.ctx.session.post(
             url,
             headers=self.ctx.headers(login=True),
-            data=json.dumps({
+            json={
                 "filePaths": req.filePaths,
                 "modelId": req.id,
                 "folders": req.folders,
-            }),
+            },
         )
 
         if response.status_code != 200 or (not response.json()["success"]):
@@ -156,3 +155,10 @@ class Model:
             ),
             local_file_path=local_file_path,
         )
+
+# @dataclass
+# class RequestAutoPager:
+#     ctx: Context
+#
+#     def post(self, url, data=None, **kwargs):
+#         ...

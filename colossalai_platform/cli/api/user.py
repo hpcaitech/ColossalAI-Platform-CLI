@@ -1,4 +1,3 @@
-import json
 import logging
 from dataclasses import dataclass
 
@@ -20,10 +19,10 @@ class User:
         response = self.ctx.session.post(
             url,
             headers={'Content-Type': 'application/json'},
-            data=json.dumps({
+            json={
                 "username": self.ctx.config.username,
                 "password": self.ctx.config.password,
-            }),
+            },
         )
 
         if response.status_code == 200:
