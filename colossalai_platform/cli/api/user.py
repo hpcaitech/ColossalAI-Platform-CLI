@@ -1,7 +1,7 @@
 import logging
 from dataclasses import dataclass
 
-from colossalai_platform.cli.api.types import ApiError, Context
+from colossalai_platform.cli.api.utils.types import ApiError, Context
 
 LOGGER = logging.getLogger(__name__)
 

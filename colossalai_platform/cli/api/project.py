@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from typing import List, Union
 
 from colossalai_platform.cli.api.dataset import DeleteFilesRequest, NoObjectToDeleteError
-from colossalai_platform.cli.api.multipart_upload import MultiPartUploader, UploadRequest
-from colossalai_platform.cli.api.types import Context, ApiError
+from colossalai_platform.cli.api.utils.multipart_upload import MultiPartUploader, UploadRequest
+from colossalai_platform.cli.api.utils.types import Context, ApiError
 
 LOGGER = logging.getLogger(__name__)
 

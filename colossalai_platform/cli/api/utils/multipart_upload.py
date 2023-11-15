@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Union, BinaryIO
 
-from colossalai_platform.cli.api.types import Context, ApiError
+from colossalai_platform.cli.api.utils.types import Context, ApiError
 
 LOGGER = logging.getLogger(__name__)
 

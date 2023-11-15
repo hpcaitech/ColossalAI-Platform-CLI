@@ -1,11 +1,10 @@
-import json
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Union
 
-from colossalai_platform.cli.api.multipart_upload import MultiPartUploader, UploadRequest
-from colossalai_platform.cli.api.types import ApiError, Context
+from colossalai_platform.cli.api.utils.multipart_upload import MultiPartUploader, UploadRequest
+from colossalai_platform.cli.api.utils.types import ApiError, Context
 
 LOGGER = logging.getLogger(__name__)
 

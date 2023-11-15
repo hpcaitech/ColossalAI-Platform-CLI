@@ -3,10 +3,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Union
 
-from colossalai_platform.cli.api.multipart_upload import MultiPartUploader, UploadRequest
-from colossalai_platform.cli.api.types import Context, ApiError
+from colossalai_platform.cli.api.utils.multipart_upload import MultiPartUploader, UploadRequest
+from colossalai_platform.cli.api.utils.pager import RequestAutoPager
+from colossalai_platform.cli.api.utils.types import Context, ApiError
 
 LOGGER = logging.getLogger(__name__)
+
 
 @dataclass
 class ModelListResponse:
@@ -22,6 +24,7 @@ class ModelListResponse:
     jobName: str
     tags: List[str]
 
+
 @dataclass
 class ModelInfoResponse:
     modelId: str
@@ -35,11 +38,13 @@ class ModelInfoResponse:
     isOwned: bool
     jobId: str
 
+
 @dataclass
 class DeleteFilesRequest:
     id: str
     filePaths: List[str] = field(default_factory=list)
     folders: List[str] = field(default_factory=list)
+
 
 class Model:
 
@@ -48,7 +53,7 @@ class Model:
         self.uploader = MultiPartUploader(
             ctx,
             self.ctx.config.api_server + "/api/file/model",
-            )
+        )
 
     def list(
             self,
@@ -57,34 +62,15 @@ class Model:
     ) -> List[ModelListResponse]:
         url = self.ctx.config.api_server + "/api/model/list"
 
-        # TODO(ofey404): extract duplicated code as a function
-        current_page = 1
-        merged_response = []
-        while True:
-            response = self.ctx.session.post(
-                url,
-                headers=self.ctx.headers(login=True),
-                json={
-                    "tags": tags,
-                    "isOwned": is_owned,
-                    "pager": {
-                        "pageSize": 10,
-                        "currentPage": current_page,
-                    },
-                },
-            )
-
-            if response.status_code != 200:
-                raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
-
-            merged_response.extend(response.json()["models"])
-
-            total_entries = response.json()["pager"]["totalEntries"]
-            page_size = response.json()["pager"]["pageSize"]
-            if page_size * current_page > total_entries:
-                break
-            else:
-                current_page += 1
+        merged_response = RequestAutoPager(self.ctx).post(
+            url,
+            headers=self.ctx.headers(login=True),
+            json={
+                "tags": tags,
+                "isOwned": is_owned,
+            },
+            extract_func=lambda response: response.json()["models"],
+        )
 
         LOGGER.debug(f"list response: {merged_response}")
         return [ModelListResponse(**d) for d in merged_response]
@@ -156,9 +142,4 @@ class Model:
             local_file_path=local_file_path,
         )
 
-# @dataclass
-# class RequestAutoPager:
-#     ctx: Context
-#
-#     def post(self, url, data=None, **kwargs):
-#         ...
+

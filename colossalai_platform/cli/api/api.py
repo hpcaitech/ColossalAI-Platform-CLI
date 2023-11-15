@@ -1,6 +1,6 @@
 from colossalai_platform.cli.api.dataset import Dataset
 from colossalai_platform.cli.api.model import Model
-from colossalai_platform.cli.api.types import Context
+from colossalai_platform.cli.api.utils.types import Context
 from colossalai_platform.cli.api.user import User
 from colossalai_platform.cli.api.project import Project
 from colossalai_platform.cli.config import Config
