@@ -20,11 +20,13 @@ class RequestAutoPager:
             url,
             extract_func: Callable[[requests.Response], List],
             json: Dict[str, Any] = None,
-            pager_options: RequestAutoPagerOptions = RequestAutoPagerOptions(),
+            pager_options: RequestAutoPagerOptions = None,
             **kwargs,
     ):
         if json is None:
             json = {}
+        if pager_options is None:
+            pager_options = RequestAutoPagerOptions()
 
         current_page = 1
         merged_response = []
