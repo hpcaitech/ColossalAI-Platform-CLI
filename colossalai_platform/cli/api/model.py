@@ -64,3 +64,23 @@ class Model:
 
         LOGGER.debug(f"list response: {merged_datasets}")
         return [ModelListResponse(**d) for d in merged_datasets]
+
+    def create(
+            self,
+            name: str,
+            description: str,
+    ) -> str:
+        url = self.ctx.config.api_server + "/api/model/create"
+        response = self.ctx.session.post(
+            url,
+            headers=self.ctx.headers(login=True),
+            data=json.dumps({
+                "modelName": name,
+                "modelDescription": description,
+            }),
+        )
+
+        if response.status_code == 200:
+            return response.json()["modelId"]
+        else:
+            raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
