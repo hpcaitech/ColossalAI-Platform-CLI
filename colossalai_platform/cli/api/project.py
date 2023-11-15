@@ -125,14 +125,14 @@ class Project:
             headers=self.ctx.headers(login=True),
             data=json.dumps({
                 "filePaths": req.filePaths,
-                "id": req.Id,
+                "id": req.id,
                 "folders": req.folders,
             }),
         )
 
         if response.status_code != 200 or (not response.json()["success"]):
             if response.status_code == 500 and ("You must specify at least one object" in response.json()["message"]):
-                raise NoObjectToDeleteError(req.Id)
+                raise NoObjectToDeleteError(req.id)
             raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
 
     def upload_local_file(

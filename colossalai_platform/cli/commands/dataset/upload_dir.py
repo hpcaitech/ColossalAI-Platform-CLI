@@ -51,7 +51,7 @@ The dataset content would be overwritten.
 
     try:
         cmd_ctx.api.dataset().delete_files(DeleteFilesRequest(
-            Id=dataset_id,
+            id=dataset_id,
             folders=[""],
         ))
     except NoObjectToDeleteError:
