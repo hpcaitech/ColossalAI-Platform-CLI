@@ -41,7 +41,7 @@ The project content would be overwritten.
     if not yes:
         do_you_want_to_continue(ctx)
 
-    click.echo(f"Clearing project {project_id}...")
+    click.echo(f"Cleaning project {project_id}...")
 
     try:
         cmd_ctx.api.project().delete_files(DeleteFilesRequest(

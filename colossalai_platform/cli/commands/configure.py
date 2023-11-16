@@ -32,7 +32,7 @@ def configure(ctx: click.Context):
 Thank you for choosing the ColossalAI Platform!
 During our public beta phase, we're actively developing and improving the platform. We appreciate your patience with any user experience issues.
 
-For assistance, visit [doc link](TODO) or reach out anytime.
+For assistance, visit [doc link](https://docs.platform.luchentech.com/) or reach out anytime.
 Your feedback is valuable as we strive to enhance your experience.
 """)
 
