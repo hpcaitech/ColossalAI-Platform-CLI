@@ -46,3 +46,9 @@ def init(name):
                 dst_f.writelines(lines)
         else:
             shutil.copy(src_path, dst_path)
+
+    click.echo(f"""Project skeleton `{name}` has been initialized in `{user_project_dir}`
+    
+- Edit `train.sh`, `train.py` and `HyperParameters.json` to create your own training project.
+- To upload it to the platform, run `cap project create` and `cap project upload-dir`.
+""")

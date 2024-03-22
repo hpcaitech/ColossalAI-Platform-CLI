@@ -45,7 +45,7 @@ The model content would be overwritten.
     if not yes:
         do_you_want_to_continue(ctx)
 
-    click.echo(f"Clearing model {model_id}...")
+    click.echo(f"Cleaning model {model_id}...")
 
     try:
         cmd_ctx.api.model().delete_files(DeleteFilesRequest(

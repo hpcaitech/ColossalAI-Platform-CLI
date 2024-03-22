@@ -47,7 +47,7 @@ The dataset content would be overwritten.
     if not yes:
         do_you_want_to_continue(ctx)
 
-    click.echo(f"Clearing dataset {dataset_id}...")
+    click.echo(f"Cleaning dataset {dataset_id}...")
 
     try:
         cmd_ctx.api.dataset().delete_files(DeleteFilesRequest(
