@@ -27,6 +27,7 @@ REQUIRE_LOGIN = [
     "dataset",
     "project",
     "model",
+    "job",
 ]
 
 
