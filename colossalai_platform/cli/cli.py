@@ -6,7 +6,7 @@ from colossalai_platform.cli.aliased_group import (CONTEXT_SETTINGS, AliasedGrou
 from colossalai_platform.cli.context import CommandContext
 from .api import ApiError
 
-from .commands import dataset, configure, project, model
+from .commands import dataset, configure, project, model, job
 
 LOGGER = logging.getLogger(__name__)
 
@@ -56,3 +56,4 @@ cli.add_command(configure)
 cli.add_command(project)
 cli.add_command(dataset)
 cli.add_command(model)
+cli.add_command(job)

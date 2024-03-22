@@ -1,4 +1,5 @@
 from colossalai_platform.cli.api.dataset import Dataset
+from colossalai_platform.cli.api.job import Job
 from colossalai_platform.cli.api.model import Model
 from colossalai_platform.cli.api.utils.types import Context
 from colossalai_platform.cli.api.user import User
@@ -14,6 +15,7 @@ class ColossalPlatformApi:
         self._dataset = Dataset(self.ctx)
         self._project = Project(self.ctx)
         self._model = Model(self.ctx)
+        self._job = Job(self.ctx)
 
     def user(self) -> User:
         return self._user
@@ -26,3 +28,6 @@ class ColossalPlatformApi:
 
     def model(self) -> Model:
         return self._model
+
+    def job(self) -> Job:
+        return self._job
