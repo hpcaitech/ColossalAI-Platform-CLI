@@ -3,7 +3,7 @@ import sys
 
 import click
 
-from colossalai_platform.cli.commands.job.init_yaml.jobyaml import JobYaml
+from colossalai_platform.cli.commands.job.init_yaml.jobyaml import new_job_yaml, MountType
 from colossalai_platform.cli.context import CommandContext
 
 @click.command(name="init-yaml", help="init job yaml")
@@ -32,19 +32,30 @@ def init_yaml(
         click.echo(f"No version found, internal error, please contact the administrator.")
         ctx.exit(1)
 
+    # These info would appear in the yaml comments,
+    # to help users understand the available options
     hyperparameters = cmd_ctx.api.project().hyperparameters(project_id, version)
-    print(f"hyperparameters: {hyperparameters}")
-
     images = cmd_ctx.api.job().images()
-    print(f"images: {images}")
-
     gpus = cmd_ctx.api.resource().gpus()
-    print(f"gpus: {gpus}")
 
-
+    job_yaml = new_job_yaml(
+        project_id,
+        version,
+        hyperparameters,
+        images,
+        gpus,
+        MountType(
+            type="project",
+            id=project_id,
+            version=version,
+            mountPath="/mnt/project",
+            name="my-project",
+            readOnly=True
+        )
+    )
     if stdout:
-        JobYaml().dump_str_with_comment(sys.stdout)
+        job_yaml.dump_str_with_comment(sys.stdout)
         return
     with open(output_path, 'wt') as f:
-        JobYaml().dump_str_with_comment(f)
+        job_yaml.dump_str_with_comment(f)
         print(f"Job yaml is written to {output_path}")

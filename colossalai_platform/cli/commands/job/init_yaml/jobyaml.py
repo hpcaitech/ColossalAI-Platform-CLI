@@ -1,8 +1,14 @@
+from datetime import datetime
 from typing import List, Dict, Any
 
 from pydantic import Field
 
+from colossalai_platform.cli.api.job import ImagesResponse
+from colossalai_platform.cli.api.project import HyperParametersResponse
+from colossalai_platform.cli.api.resource import GpusResponse
 from colossalai_platform.cli.utils.pydantic_model_with_yaml_comment import ModelWithYamlComment
+from colossalai_platform.cli.utils.strings import generate_random_string, yaml_dump_dataclass
+
 
 class MountType(ModelWithYamlComment):
     type: str
@@ -12,61 +18,55 @@ class MountType(ModelWithYamlComment):
     name: str
     readOnly: bool
 
+
 class Gpu(ModelWithYamlComment):
     gpuType: str
     manufacturer: str
     number: int
 
+
 class JobYaml(ModelWithYamlComment):
-    jobName: str = "job-{hash}-from-project-{xx}"
+    jobName: str
     jobName_comment_eol_: str = "change to your job name"
 
-    jobDescription: str = "from project {xx}, yaml created by cli at {datetime}"
+    jobDescription: str
     jobDescription_comment_eol_: str = "change to your job description"
 
-    image: str = "placeholder"
-    image_comment_before_: str = """Available images:
-- name: nexus.platform.colossalai.com/base/colossal-ai:cuda11.8-torch2.1.0
-  description: image for colossalai 0.3.4
-- name: nexus.platform.colossalai.com/hpcaitech/pytorch-npu:2.1.0
-  description: image for training on huawei npu
+    image: str = "change/to/your/image:latest"
+    image_comment_before_: str
+
+    hyperParameters: Dict[str, str] = Field(default_factory=dict)
+    hyperParameters_comment_after_: str
+
+    resourceType: str = "public"
+    resourceType_comment_eol_: str = "Options: [public, private]"
+
+    gpu: Gpu = Field(default_factory=lambda: Gpu(gpuType="NVIDIA-V100", manufacturer="Nvidia", number=1))
+    gpu_comment_after_: str
+
+    mounts: List[MountType]
+    mounts_comment_after_: str
+
+    launchCommand: str = "bash /mnt/project/train.sh"
+
+def new_job_yaml(
+        project_id: str,
+        version: int,
+        hyperparameters: List[HyperParametersResponse],
+        images: List[ImagesResponse],
+        gpus: List[GpusResponse],
+        project_mount: MountType
+) -> JobYaml:
+    image_comment = f"""Available images:
+{yaml_dump_dataclass(images)}
 ############################
 # Example of this section: #
 ############################
 image: nexus.platform.colossalai.com/base/colossal-ai:cuda11.8-torch2.1.0
 """
 
-    hyperParameters: Dict[str, Any] = Field(default_factory=lambda: {
-        "key": "value"
-    })
-    hyperParameters_comment_after_: str = """Available hyperparameters specs:
-{
-    "name": "strategy",
-    "type": "",
-    "defaultValue": "colossalai_zero2",
-    "description": "Options for ColossalAI strategies to optimize your training process",
-    "choices": [
-        "colossalai_zero2_cpu",
-        "colossalai_zero2",
-        "colossalai_gemini",
-        "ddp"
-    ],
-    "required": false
-},
-{
-    "name": "model",
-    "type": "",
-    "defaultValue": "opt",
-    "description": "The type of LLM model that you want to use in training",
-    "choices": [
-        "bloom",
-        "opt",
-        "gpt2",
-        "llama2",
-        "chatglm"
-    ],
-    "required": false
-},
+    hyperparameters_comment = f"""Available hyperparameters specs:
+{yaml_dump_dataclass(hyperparameters)}
 ############################
 # Example of this section: #
 ############################
@@ -74,11 +74,9 @@ image: nexus.platform.colossalai.com/base/colossal-ai:cuda11.8-torch2.1.0
 - model: opt
 """
 
-    resourceType: str = "public"
-    resourceType_comment_eol_: str = "Options: [public, private]"
-
-    gpu: Gpu = Field(default_factory=lambda: Gpu(gpuType="NVIDIA-V100", manufacturer="Nvidia", number=1))
-    gpu_comment_after_: str = """############################
+    gpu_comment = f"""Available GPU types:
+{yaml_dump_dataclass(gpus)}
+############################
 # Example of this section: #
 ############################
 gpuType: NVIDIA-V100
@@ -86,10 +84,9 @@ manufacturer: Nvidia
 number: 1
 """
 
-    mounts: List[MountType] = Field(default_factory=lambda: [
-        MountType(type="dataset", id="placeholder", version=1, mountPath="/data", name="placeholder", readOnly=True),
-    ])
-    mounts_comment_after_: str = """############################
+    mounts_comment = """For more storage information,
+run `cap dataset list`, `cap project list`, or `cap model list`.
+############################
 # Example of this section: #
 ############################
 - type: dataset     # Options: [dataset, project, model]
@@ -100,4 +97,14 @@ number: 1
   readOnly: false
 """
 
-    launchCommand: str = "bash /mnt/project/train.sh"
+    return JobYaml(
+        jobName=f"job-{generate_random_string(5)}-from-project-{project_id}-version-{version}",
+        jobDescription=f"From project {project_id}, yaml created by cli at {datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}",
+        image_comment_before_=image_comment,
+        hyperParameters_comment_after_=hyperparameters_comment,
+        gpu_comment_after_=gpu_comment,
+        mounts_comment_after_=mounts_comment,
+        mounts=[project_mount]
+    )
+
+
