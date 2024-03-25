@@ -6,7 +6,6 @@ from pathlib import Path
 
 import click
 import yaml
-from pydantic import BaseModel
 
 from colossalai_platform.cli.api import ColossalPlatformApi
 from colossalai_platform.cli.config import Config
@@ -21,6 +20,9 @@ class BaseCommandContext:
     code at CommandContext's `__init__` method
     """
     dir: Path = Path.home() / ".colossalai-platform"
+
+    # config is inited with default value.
+    # If config file doesn't exist, this default value would be written to the file.
     config: Config = Config().check_format()
     api: ColossalPlatformApi = None
 
