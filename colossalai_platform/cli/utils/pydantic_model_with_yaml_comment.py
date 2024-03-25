@@ -29,7 +29,8 @@ def _parse_comment(data: Dict) -> CommentedMap:
                 for postfix, handler in COMMENT_POSTFIX_HANDLER.items():
                     if k.endswith(postfix):
                         key = k[:-len(postfix)]
-                        handler(ans, key, v)
+                        if v != "" and v is not None:
+                            handler(ans, key, v)
                         comment_keys.append(k)
                         break
                 ans[k] = _parse(v)
