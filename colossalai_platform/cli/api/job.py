@@ -25,6 +25,7 @@ class ImagesResponse:
 class Job:
     def __init__(self, ctx: Context):
         self.ctx = ctx
+
     def list(
             self,
             status_type: str = "All",
@@ -42,7 +43,7 @@ class Job:
         LOGGER.debug(f"list response: {merged}")
         return [JobListResponse(**d) for d in merged]
 
-    def images(self):
+    def images(self) -> List[ImagesResponse]:
         url = self.ctx.config.api_server + "/api/job/images"
 
         response = self.ctx.session.get(

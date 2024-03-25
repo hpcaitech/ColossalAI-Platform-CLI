@@ -14,17 +14,15 @@ class MountType(ModelWithYamlComment):
 
 class Gpu(ModelWithYamlComment):
     gpuType: str
-    gpuType_comment_eol_: str = "Available: [NVIDIA-V100, NVIDIA-T4]"
-
     manufacturer: str
-    manufacturer_comment_eol_: str = ""
-
     number: int
-    number_comment_eol_: str = ""
 
 class JobYaml(ModelWithYamlComment):
-    jobName: str = "from-project-{xx}"
-    jobDescription: str = "from project {xx}"
+    jobName: str = "job-{hash}-from-project-{xx}"
+    jobName_comment_eol_: str = "change to your job name"
+
+    jobDescription: str = "from project {xx}, yaml created by cli at {datetime}"
+    jobDescription_comment_eol_: str = "change to your job description"
 
     image: str = "placeholder"
     image_comment_before_: str = """Available images:
@@ -41,7 +39,7 @@ image: nexus.platform.colossalai.com/base/colossal-ai:cuda11.8-torch2.1.0
     hyperParameters: Dict[str, Any] = Field(default_factory=lambda: {
         "key": "value"
     })
-    hyperParameters_comment_after_: str = """Available hyperparameters:
+    hyperParameters_comment_after_: str = """Available hyperparameters specs:
 {
     "name": "strategy",
     "type": "",
@@ -77,7 +75,7 @@ image: nexus.platform.colossalai.com/base/colossal-ai:cuda11.8-torch2.1.0
 """
 
     resourceType: str = "public"
-    resourceType_comment_eol_: str = "Option: [public, private]"
+    resourceType_comment_eol_: str = "Options: [public, private]"
 
     gpu: Gpu = Field(default_factory=lambda: Gpu(gpuType="NVIDIA-V100", manufacturer="Nvidia", number=1))
     gpu_comment_after_: str = """############################
@@ -94,11 +92,11 @@ number: 1
     mounts_comment_after_: str = """############################
 # Example of this section: #
 ############################
-- type: project
-  id: my-project
-  version: 1
-  mountPath: /mnt/project
+- type: dataset     # Options: [dataset, project, model]
+  id: {dataset-id}  # from `cap dataset list` or the web console
   name: my-project
+  version: 1        # omit to use latest
+  mountPath: /mnt/project
   readOnly: false
 """
 
