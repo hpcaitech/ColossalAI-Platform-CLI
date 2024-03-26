@@ -43,7 +43,7 @@ class JobYaml(ModelWithYamlComment):
     resourceType: str = "public"
     resourceType_comment_eol_: str = "Options: [public, private]"
 
-    gpu: Gpu = Field(default_factory=lambda: Gpu(gpuType="NVIDIA-V100", manufacturer="Nvidia", number=1))
+    gpu: Gpu = None
     gpu_comment_after_: str = ""
 
     mounts: List[MountType] = []
@@ -130,6 +130,7 @@ run `cap dataset list`, `cap project list`, or `cap model list`.
             for h in hyperparameters
         },
         hyperParameters_comment_after_=hyperparameters_comment,
+        gpus=Gpu(gpuType=gpus[0].gpuType, manufacturer=gpus[0].manufacturer, number=gpus[0].availableCounts[0]),
         gpu_comment_after_=gpu_comment,
         mounts_comment_after_=mounts_comment,
         mounts=[project_mount]
