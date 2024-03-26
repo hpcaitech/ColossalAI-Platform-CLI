@@ -26,6 +26,7 @@ class ProjectInfoResponse:
     projectDescription: str
     createAt: str
     projectId: str
+    tags: List[str]
 
 @dataclass
 class HyperParametersResponse:
