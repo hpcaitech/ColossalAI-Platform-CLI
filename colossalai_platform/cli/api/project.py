@@ -17,6 +17,7 @@ class ProjectListResponse:
     projectDescription: str
     createAt: str
     projectId: str
+    tags: List[str]
 
 
 @dataclass
@@ -26,6 +27,14 @@ class ProjectInfoResponse:
     createAt: str
     projectId: str
 
+@dataclass
+class HyperParametersResponse:
+    name: str
+    type: str
+    defaultValue: str
+    description: str
+    required: bool
+    choices: List[str] = None
 
 class ProjectNotFoundError(Exception):
 
@@ -130,3 +139,36 @@ class Project:
             ),
             local_file_path=local_file_path,
         )
+
+    def version_list(self, project_id: str) -> List[int]:
+        url = self.ctx.config.api_server + "/api/project/version/list"
+
+        response = self.ctx.session.post(
+            url,
+            headers=self.ctx.headers(login=True),
+            json={
+                "projectId": project_id,
+            },
+        )
+
+        if response.status_code == 200:
+            return response.json()["versions"]
+        else:
+            raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")
+
+    def hyperparameters(self, project_id: str, version: int) -> List[HyperParametersResponse]:
+        url = self.ctx.config.api_server + "/api/project/hyperparameters"
+
+        response = self.ctx.session.post(
+            url,
+            headers=self.ctx.headers(login=True),
+            json={
+                "projectId": project_id,
+                "version": version,
+            },
+        )
+
+        if response.status_code == 200:
+            return [HyperParametersResponse(**d) for d in response.json()["hyperParameters"]]
+        else:
+            raise ApiError(f"{url} failed with status code {response.status_code}, body: {response.text}")

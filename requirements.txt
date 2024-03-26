@@ -7,3 +7,6 @@ pydantic~=2.1.1
 #
 # Otherwise the pip install above python 3.10 would fail.
 pyyaml~=5.3.1
+
+# For yaml comment support
+ruamel.yaml~=0.18.6
