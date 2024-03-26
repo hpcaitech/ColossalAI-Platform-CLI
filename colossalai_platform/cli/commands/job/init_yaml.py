@@ -3,7 +3,7 @@ import sys
 
 import click
 
-from colossalai_platform.cli.commands.job.init_yaml.jobyaml import new_job_yaml, MountType
+from colossalai_platform.cli.commands.job.internal.jobyaml import new_job_yaml, MountType
 from colossalai_platform.cli.context import CommandContext
 
 @click.command(name="init-yaml", help="init job yaml")
@@ -37,6 +37,7 @@ def init_yaml(
     hyperparameters = cmd_ctx.api.project().hyperparameters(project_id, version)
     images = cmd_ctx.api.job().images()
     gpus = cmd_ctx.api.resource().gpus()
+    project_info = cmd_ctx.api.project().info(project_id)
 
     job_yaml = new_job_yaml(
         project_id,
@@ -49,13 +50,14 @@ def init_yaml(
             id=project_id,
             version=version,
             mountPath="/mnt/project",
-            name="my-project",
+            name=project_info.projectName,
             readOnly=True
         )
     )
     if stdout:
         job_yaml.dump_str_with_comment(sys.stdout)
-        return
+        ctx.exit(0)  # return
+
     with open(output_path, 'wt') as f:
         job_yaml.dump_str_with_comment(f)
         print(f"Job yaml is written to {output_path}")
